@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import Navigation from '@/components/layout/Navigation';
 
+// Disable static generation for authenticated routes
+export const dynamic = 'force-dynamic';
+
 export default async function AuthenticatedLayout({
   children,
 }: {
