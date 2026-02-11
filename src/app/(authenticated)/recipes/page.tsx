@@ -1,19 +1,11 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
 import { RecipeService } from '@/lib/services/recipe-service';
 import RecipeCard from '@/components/recipe/RecipeCard';
 import Button from '@/components/ui/Button';
 
 export default async function RecipesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Fetch user's recipes
-  const recipes = await RecipeService.searchManualRecipes({
-    userId: user?.id,
-  });
+  // Personal use - fetch all recipes
+  const recipes = await RecipeService.searchManualRecipes({});
 
   return (
     <div>

@@ -80,16 +80,11 @@ export class ManualRecipeAdapter extends RecipeAdapter {
   async saveRecipe(
     recipe: Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>
   ): Promise<Recipe> {
-    // Get the current user
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
+    // Personal use - no authentication required
+    // Use a fixed user ID for personal recipes
+    const PERSONAL_USER_ID = '00000000-0000-0000-0000-000000000000';
 
-    if (!user) {
-      throw new Error('User must be authenticated to create recipes');
-    }
-
-    const dbRecipe = recipeToDatabaseRecipe(recipe, user.id, 'manual');
+    const dbRecipe = recipeToDatabaseRecipe(recipe, PERSONAL_USER_ID, 'manual');
 
     const { data, error } = await this.supabase
       .from('recipes')
@@ -109,14 +104,7 @@ export class ManualRecipeAdapter extends RecipeAdapter {
     id: string,
     recipe: Partial<Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>>
   ): Promise<Recipe> {
-    // Get the current user
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error('User must be authenticated to update recipes');
-    }
+    // Personal use - no authentication required
 
     // Build update object
     const updateData: Partial<DatabaseRecipe> = {};
@@ -141,7 +129,6 @@ export class ManualRecipeAdapter extends RecipeAdapter {
       .from('recipes')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', user.id)
       .eq('source_type', 'manual')
       .select()
       .single();
@@ -155,20 +142,11 @@ export class ManualRecipeAdapter extends RecipeAdapter {
   }
 
   async deleteRecipe(id: string): Promise<void> {
-    // Get the current user
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error('User must be authenticated to delete recipes');
-    }
-
+    // Personal use - no authentication required
     const { error } = await this.supabase
       .from('recipes')
       .delete()
       .eq('id', id)
-      .eq('user_id', user.id)
       .eq('source_type', 'manual');
 
     if (error) {

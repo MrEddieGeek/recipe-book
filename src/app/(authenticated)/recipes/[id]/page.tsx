@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
 import { RecipeService } from '@/lib/services/recipe-service';
 import RecipeDetail from '@/components/recipe/RecipeDetail';
 import Button from '@/components/ui/Button';
@@ -12,10 +11,6 @@ interface RecipePageProps {
 
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   // Fetch recipe
   const recipe = await RecipeService.getRecipeById(id, 'manual');
@@ -24,14 +19,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
     notFound();
   }
 
-  // Check if user owns this recipe
-  const { data: dbRecipe } = await supabase
-    .from('recipes')
-    .select('user_id')
-    .eq('id', id)
-    .single();
-
-  const isOwner = dbRecipe?.user_id === user?.id;
+  // Personal use - always show edit/delete buttons
+  const isOwner = true;
 
   return (
     <div>
