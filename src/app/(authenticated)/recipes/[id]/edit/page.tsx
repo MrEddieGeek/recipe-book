@@ -10,7 +10,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { id } = await params;
 
   // Fetch recipe
-  const recipe = await RecipeService.getRecipeById(id, 'manual');
+  const recipe = await RecipeService.getRecipeById(id);
 
   if (!recipe) {
     notFound();

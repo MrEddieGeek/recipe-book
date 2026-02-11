@@ -1,39 +1,128 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { RecipeService } from '@/lib/services/recipe-service';
 import RecipeCard from '@/components/recipe/RecipeCard';
 import Button from '@/components/ui/Button';
+import Spinner from '@/components/ui/Spinner';
+import { Recipe } from '@/lib/adapters/types';
 
-export default async function RecipesPage() {
-  // Personal use - fetch all recipes
-  const recipes = await RecipeService.searchManualRecipes({});
+type SourceTab = 'manual' | 'discover';
+
+export default function RecipesPage() {
+  const [activeTab, setActiveTab] = useState<SourceTab>('manual');
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchRecipes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const source = activeTab === 'manual' ? 'manual' : 'api';
+      const params = new URLSearchParams({ source });
+      if (debouncedQuery) params.set('q', debouncedQuery);
+
+      const res = await fetch(`/api/recipes/search?${params}`);
+      if (res.ok) {
+        setRecipes(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch recipes:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, debouncedQuery]);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [fetchRecipes]);
 
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Recipes</h1>
-        <Link href="/recipes/new">
-          <Button>
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            New Recipe
-          </Button>
-        </Link>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-900">Recipes</h1>
+        <div className="flex gap-2">
+          <Link href="/recipes/generate">
+            <Button variant="secondary" size="sm">
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              AI
+            </Button>
+          </Link>
+          <Link href="/recipes/new">
+            <Button>
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Recipe Grid */}
-      {recipes.length === 0 ? (
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-4">
+        <button
+          onClick={() => setActiveTab('manual')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'manual'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          My Recipes
+        </button>
+        <button
+          onClick={() => setActiveTab('discover')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'discover'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Discover
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative mb-6">
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          placeholder={activeTab === 'manual' ? 'Search my recipes...' : 'Search recipes online...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Spinner size="lg" />
+        </div>
+      ) : recipes.length === 0 ? (
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
             <svg
@@ -51,14 +140,20 @@ export default async function RecipesPage() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            No recipes yet
+            {activeTab === 'manual' ? 'No recipes yet' : 'No recipes found'}
           </h2>
           <p className="text-gray-600 mb-6">
-            Create your first recipe to get started!
+            {activeTab === 'manual'
+              ? 'Create your first recipe to get started!'
+              : debouncedQuery
+                ? 'Try a different search term.'
+                : 'Search for a recipe to discover something new.'}
           </p>
-          <Link href="/recipes/new">
-            <Button>Create Recipe</Button>
-          </Link>
+          {activeTab === 'manual' && (
+            <Link href="/recipes/new">
+              <Button>Create Recipe</Button>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

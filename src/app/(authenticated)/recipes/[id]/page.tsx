@@ -4,6 +4,7 @@ import { RecipeService } from '@/lib/services/recipe-service';
 import RecipeDetail from '@/components/recipe/RecipeDetail';
 import Button from '@/components/ui/Button';
 import DeleteRecipeButton from '@/components/recipe/DeleteRecipeButton';
+import SaveToMyRecipesButton from '@/components/recipe/SaveToMyRecipesButton';
 
 interface RecipePageProps {
   params: Promise<{ id: string }>;
@@ -12,15 +13,14 @@ interface RecipePageProps {
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
 
-  // Fetch recipe
-  const recipe = await RecipeService.getRecipeById(id, 'manual');
+  // Fetch recipe — auto-routes to correct adapter based on ID prefix
+  const recipe = await RecipeService.getRecipeById(id);
 
   if (!recipe) {
     notFound();
   }
 
-  // Personal use - always show edit/delete buttons
-  const isOwner = true;
+  const isManual = recipe.source.type === 'manual';
 
   return (
     <div>
@@ -45,29 +45,33 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </Button>
         </Link>
 
-        {isOwner && (
-          <div className="flex gap-2">
-            <Link href={`/recipes/${id}/edit`}>
-              <Button variant="secondary" size="sm">
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                Edit
-              </Button>
-            </Link>
-            <DeleteRecipeButton recipeId={id} recipeTitle={recipe.title} />
-          </div>
-        )}
+        <div className="flex gap-2">
+          {isManual ? (
+            <>
+              <Link href={`/recipes/${id}/edit`}>
+                <Button variant="secondary" size="sm">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit
+                </Button>
+              </Link>
+              <DeleteRecipeButton recipeId={id} recipeTitle={recipe.title} />
+            </>
+          ) : (
+            <SaveToMyRecipesButton recipe={recipe} />
+          )}
+        </div>
       </div>
 
       {/* Recipe Content */}

@@ -1,5 +1,5 @@
-// AI recipe adapter - Claude API integration (Phase 2)
-// Currently a stub that throws "not implemented"
+// AI recipe adapter - generates recipes via an API route that calls Claude
+// The API route keeps the ANTHROPIC_API_KEY server-side only
 
 import { RecipeAdapter } from './base-adapter';
 import { Recipe, RecipeSearchOptions } from './types';
@@ -8,21 +8,31 @@ export class AiRecipeAdapter extends RecipeAdapter {
   readonly sourceType = 'ai' as const;
 
   async getRecipeById(id: string): Promise<Recipe | null> {
-    throw new Error('AI adapter not yet implemented (Phase 2)');
+    // AI recipes are ephemeral — look up from saved recipes if cached
+    return null;
   }
 
   async searchRecipes(options: RecipeSearchOptions): Promise<Recipe[]> {
-    throw new Error('AI adapter not yet implemented (Phase 2)');
+    // AI doesn't support browsing; use generateRecipe instead
+    return [];
   }
 
-  // Future method for Phase 2
+  /**
+   * Generate a recipe from a text prompt.
+   * This calls our own API route which in turn calls Claude.
+   */
   async generateRecipe(prompt: string): Promise<Recipe> {
-    throw new Error('AI adapter not yet implemented (Phase 2)');
+    const res = await fetch('/api/generate-recipe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(err.error || 'Failed to generate recipe');
+    }
+
+    return res.json();
   }
 }
-
-// Future implementation will:
-// 1. Call Claude API with structured prompts
-// 2. Validate output with Zod schemas
-// 3. Save generated recipes to Supabase (source_type='ai')
-// 4. Return recipes with source.type = 'ai'

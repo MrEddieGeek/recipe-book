@@ -5,67 +5,46 @@ import { Recipe, RecipeSearchOptions } from '../adapters/types';
 
 export class RecipeService {
   /**
-   * Get a recipe by ID from a specific source
+   * Get a recipe by ID, routing to the correct adapter based on ID prefix
    */
-  static async getRecipeById(
-    id: string,
-    sourceType: 'manual' | 'api' | 'ai'
-  ): Promise<Recipe | null> {
-    const adapter = RecipeAdapterFactory.getAdapter(sourceType);
-    return adapter.getRecipeById(id);
+  static async getRecipeById(id: string): Promise<Recipe | null> {
+    if (id.startsWith('mealdb-')) {
+      return RecipeAdapterFactory.getAdapter('api').getRecipeById(id);
+    }
+    // default to manual (UUID format)
+    return RecipeAdapterFactory.getAdapter('manual').getRecipeById(id);
   }
 
   /**
    * Search manual recipes only
    */
-  static async searchManualRecipes(
-    options: RecipeSearchOptions
-  ): Promise<Recipe[]> {
-    const adapter = RecipeAdapterFactory.getAdapter('manual');
-    return adapter.searchRecipes(options);
+  static async searchManualRecipes(options: RecipeSearchOptions): Promise<Recipe[]> {
+    return RecipeAdapterFactory.getAdapter('manual').searchRecipes(options);
   }
 
   /**
-   * Search all enabled recipe sources (Phase 2)
-   * Returns recipes grouped by source
+   * Search TheMealDB API recipes
    */
-  static async searchAllSources(options: RecipeSearchOptions): Promise<{
-    manual: Recipe[];
-    api: Recipe[];
-    ai: Recipe[];
-  }> {
-    const adapters = RecipeAdapterFactory.getAllAdapters();
+  static async searchApiRecipes(options: RecipeSearchOptions): Promise<Recipe[]> {
+    return RecipeAdapterFactory.getAdapter('api').searchRecipes(options);
+  }
+
+  /**
+   * Search all browsable sources in parallel
+   */
+  static async searchAllSources(options: RecipeSearchOptions): Promise<Recipe[]> {
+    const adapters = RecipeAdapterFactory.getBrowsableAdapters();
     const results = await Promise.allSettled(
-      adapters.map((adapter) => adapter.searchRecipes(options))
+      adapters.map((a) => a.searchRecipes(options))
     );
 
-    const manual: Recipe[] = [];
-    const api: Recipe[] = [];
-    const ai: Recipe[] = [];
-
-    results.forEach((result, index) => {
+    const recipes: Recipe[] = [];
+    for (const result of results) {
       if (result.status === 'fulfilled') {
-        const adapter = adapters[index];
-        switch (adapter.sourceType) {
-          case 'manual':
-            manual.push(...result.value);
-            break;
-          case 'api':
-            api.push(...result.value);
-            break;
-          case 'ai':
-            ai.push(...result.value);
-            break;
-        }
-      } else {
-        console.error(
-          `Error fetching from ${adapters[index].sourceType}:`,
-          result.reason
-        );
+        recipes.push(...result.value);
       }
-    });
-
-    return { manual, api, ai };
+    }
+    return recipes;
   }
 
   /**
@@ -75,10 +54,7 @@ export class RecipeService {
     recipe: Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>
   ): Promise<Recipe> {
     const adapter = RecipeAdapterFactory.getAdapter('manual');
-    if (!adapter.saveRecipe) {
-      throw new Error('Manual adapter does not support saving recipes');
-    }
-    return adapter.saveRecipe(recipe);
+    return adapter.saveRecipe!(recipe);
   }
 
   /**
@@ -89,10 +65,7 @@ export class RecipeService {
     recipe: Partial<Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>>
   ): Promise<Recipe> {
     const adapter = RecipeAdapterFactory.getAdapter('manual');
-    if (!adapter.updateRecipe) {
-      throw new Error('Manual adapter does not support updating recipes');
-    }
-    return adapter.updateRecipe(id, recipe);
+    return adapter.updateRecipe!(id, recipe);
   }
 
   /**
@@ -100,26 +73,15 @@ export class RecipeService {
    */
   static async deleteManualRecipe(id: string): Promise<void> {
     const adapter = RecipeAdapterFactory.getAdapter('manual');
-    if (!adapter.deleteRecipe) {
-      throw new Error('Manual adapter does not support deleting recipes');
-    }
-    return adapter.deleteRecipe(id);
+    return adapter.deleteRecipe!(id);
   }
 
   /**
-   * Get all recipes (combined from all sources)
+   * Save an external recipe (API/AI) as a manual recipe for your collection
    */
-  static async getAllRecipes(maxResults?: number): Promise<Recipe[]> {
-    const results = await this.searchAllSources({ maxResults });
-    return [...results.manual, ...results.api, ...results.ai];
-  }
-
-  /**
-   * Upload recipe image to Supabase Storage
-   */
-  static async uploadRecipeImage(file: File): Promise<string> {
-    // This will be implemented with actual Supabase client when needed
-    // For now, return a placeholder
-    throw new Error('Image upload not yet implemented');
+  static async saveToMyRecipes(
+    recipe: Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>
+  ): Promise<Recipe> {
+    return this.createManualRecipe(recipe);
   }
 }

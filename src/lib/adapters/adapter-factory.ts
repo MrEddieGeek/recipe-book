@@ -11,58 +11,35 @@ let apiAdapter: ApiRecipeAdapter | null = null;
 let aiAdapter: AiRecipeAdapter | null = null;
 
 export class RecipeAdapterFactory {
-  /**
-   * Get a specific adapter by source type
-   */
+  static getAdapter(sourceType: 'manual'): ManualRecipeAdapter;
+  static getAdapter(sourceType: 'api'): ApiRecipeAdapter;
+  static getAdapter(sourceType: 'ai'): AiRecipeAdapter;
+  static getAdapter(sourceType: 'manual' | 'api' | 'ai'): RecipeAdapter;
   static getAdapter(sourceType: 'manual' | 'api' | 'ai'): RecipeAdapter {
     switch (sourceType) {
       case 'manual':
-        if (!manualAdapter) {
-          manualAdapter = new ManualRecipeAdapter();
-        }
+        if (!manualAdapter) manualAdapter = new ManualRecipeAdapter();
         return manualAdapter;
-
       case 'api':
-        if (!apiAdapter) {
-          apiAdapter = new ApiRecipeAdapter();
-        }
+        if (!apiAdapter) apiAdapter = new ApiRecipeAdapter();
         return apiAdapter;
-
       case 'ai':
-        if (!aiAdapter) {
-          aiAdapter = new AiRecipeAdapter();
-        }
+        if (!aiAdapter) aiAdapter = new AiRecipeAdapter();
         return aiAdapter;
-
       default:
         throw new Error(`Unknown source type: ${sourceType}`);
     }
   }
 
   /**
-   * Get all enabled adapters (for multi-source search in Phase 2)
-   * Currently returns only manual adapter for Phase 1
+   * Get all browsable adapters (manual + api).
+   * AI adapter is not browsable — it generates on demand.
    */
-  static getAllAdapters(): RecipeAdapter[] {
-    // Phase 1: Only manual recipes
-    return [this.getAdapter('manual')];
-
-    // Phase 2: Uncomment to enable all sources
-    // return [
-    //   this.getAdapter('manual'),
-    //   this.getAdapter('api'),
-    //   this.getAdapter('ai'),
-    // ];
+  static getBrowsableAdapters(): RecipeAdapter[] {
+    return [this.getAdapter('manual'), this.getAdapter('api')];
   }
 
-  /**
-   * Get enabled source types
-   */
   static getEnabledSources(): Array<'manual' | 'api' | 'ai'> {
-    // Phase 1: Only manual
-    return ['manual'];
-
-    // Phase 2: Uncomment to enable all sources
-    // return ['manual', 'api', 'ai'];
+    return ['manual', 'api', 'ai'];
   }
 }
