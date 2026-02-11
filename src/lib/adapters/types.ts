@@ -84,11 +84,11 @@ export function databaseRecipeToRecipe(dbRecipe: DatabaseRecipe): Recipe {
 
 export function recipeToDatabaseRecipe(
   recipe: Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>,
-  userId: string,
+  userId: string | null,
   sourceType: 'manual' | 'api' | 'ai'
 ): Omit<DatabaseRecipe, 'id' | 'created_at' | 'updated_at'> {
   return {
-    user_id: sourceType === 'manual' ? userId : null,
+    user_id: userId,
     title: recipe.title,
     description: recipe.description || null,
     image_url: recipe.imageUrl || null,

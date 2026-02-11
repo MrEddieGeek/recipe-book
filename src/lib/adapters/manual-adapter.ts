@@ -11,7 +11,8 @@ import {
   recipeToDatabaseRecipe,
 } from './types';
 
-const PERSONAL_USER_ID = '00000000-0000-0000-0000-000000000000';
+// Personal use: no user authentication, user_id is null to avoid FK constraint
+const PERSONAL_USER_ID = null;
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

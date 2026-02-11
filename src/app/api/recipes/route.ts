@@ -7,7 +7,8 @@ export async function POST(request: NextRequest) {
     const recipe = await RecipeService.createManualRecipe(body);
     return Response.json(recipe);
   } catch (error) {
-    console.error('Create recipe error:', error);
-    return Response.json({ error: 'Failed to create recipe' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Failed to create recipe';
+    console.error('Create recipe error:', message);
+    return Response.json({ error: message }, { status: 500 });
   }
 }
