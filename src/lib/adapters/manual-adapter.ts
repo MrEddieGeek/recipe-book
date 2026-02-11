@@ -1,6 +1,7 @@
 // Manual recipe adapter - Full CRUD implementation with Supabase
+// Personal use: no authentication, uses service role key to bypass RLS
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { RecipeAdapter } from './base-adapter';
 import {
   Recipe,
@@ -10,28 +11,26 @@ import {
   recipeToDatabaseRecipe,
 } from './types';
 
+const PERSONAL_USER_ID = '00000000-0000-0000-0000-000000000000';
+
+function getSupabaseAdmin(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, key);
+}
+
 export class ManualRecipeAdapter extends RecipeAdapter {
   readonly sourceType = 'manual' as const;
-  private supabase;
-
-  constructor() {
-    super();
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    this.supabase = createClient(supabaseUrl, supabaseKey);
-  }
 
   async getRecipeById(id: string): Promise<Recipe | null> {
-    const { data, error } = await this.supabase
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
       .from('recipes')
       .select('*')
       .eq('id', id)
-      .eq('source_type', 'manual')
       .single();
 
     if (error || !data) {
-      console.error('Error fetching recipe:', error);
       return null;
     }
 
@@ -39,30 +38,22 @@ export class ManualRecipeAdapter extends RecipeAdapter {
   }
 
   async searchRecipes(options: RecipeSearchOptions): Promise<Recipe[]> {
-    let query = this.supabase
+    const supabase = getSupabaseAdmin();
+    let query = supabase
       .from('recipes')
       .select('*')
-      .eq('source_type', 'manual')
       .order('created_at', { ascending: false });
 
-    // Filter by user if specified
-    if (options.userId) {
-      query = query.eq('user_id', options.userId);
-    }
-
-    // Filter by tags
     if (options.tags && options.tags.length > 0) {
       query = query.overlaps('tags', options.tags);
     }
 
-    // Search by title/description
     if (options.query) {
       query = query.or(
         `title.ilike.%${options.query}%,description.ilike.%${options.query}%`
       );
     }
 
-    // Limit results
     if (options.maxResults) {
       query = query.limit(options.maxResults);
     }
@@ -80,13 +71,10 @@ export class ManualRecipeAdapter extends RecipeAdapter {
   async saveRecipe(
     recipe: Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>
   ): Promise<Recipe> {
-    // Personal use - no authentication required
-    // Use a fixed user ID for personal recipes
-    const PERSONAL_USER_ID = '00000000-0000-0000-0000-000000000000';
-
+    const supabase = getSupabaseAdmin();
     const dbRecipe = recipeToDatabaseRecipe(recipe, PERSONAL_USER_ID, 'manual');
 
-    const { data, error } = await this.supabase
+    const { data, error } = await supabase
       .from('recipes')
       .insert(dbRecipe)
       .select()
@@ -94,7 +82,7 @@ export class ManualRecipeAdapter extends RecipeAdapter {
 
     if (error || !data) {
       console.error('Error saving recipe:', error);
-      throw new Error('Failed to save recipe');
+      throw new Error(`Failed to save recipe: ${error?.message}`);
     }
 
     return databaseRecipeToRecipe(data as DatabaseRecipe);
@@ -104,54 +92,44 @@ export class ManualRecipeAdapter extends RecipeAdapter {
     id: string,
     recipe: Partial<Omit<Recipe, 'id' | 'source' | 'createdAt' | 'updatedAt'>>
   ): Promise<Recipe> {
-    // Personal use - no authentication required
+    const supabase = getSupabaseAdmin();
 
-    // Build update object
-    const updateData: Partial<DatabaseRecipe> = {};
+    const updateData: Record<string, unknown> = {};
     if (recipe.title !== undefined) updateData.title = recipe.title;
-    if (recipe.description !== undefined)
-      updateData.description = recipe.description || null;
-    if (recipe.imageUrl !== undefined)
-      updateData.image_url = recipe.imageUrl || null;
-    if (recipe.prepTimeMinutes !== undefined)
-      updateData.prep_time_minutes = recipe.prepTimeMinutes || null;
-    if (recipe.cookTimeMinutes !== undefined)
-      updateData.cook_time_minutes = recipe.cookTimeMinutes || null;
-    if (recipe.servings !== undefined)
-      updateData.servings = recipe.servings || null;
-    if (recipe.ingredients !== undefined)
-      updateData.ingredients = recipe.ingredients;
-    if (recipe.instructions !== undefined)
-      updateData.instructions = recipe.instructions;
+    if (recipe.description !== undefined) updateData.description = recipe.description || null;
+    if (recipe.imageUrl !== undefined) updateData.image_url = recipe.imageUrl || null;
+    if (recipe.prepTimeMinutes !== undefined) updateData.prep_time_minutes = recipe.prepTimeMinutes || null;
+    if (recipe.cookTimeMinutes !== undefined) updateData.cook_time_minutes = recipe.cookTimeMinutes || null;
+    if (recipe.servings !== undefined) updateData.servings = recipe.servings || null;
+    if (recipe.ingredients !== undefined) updateData.ingredients = recipe.ingredients;
+    if (recipe.instructions !== undefined) updateData.instructions = recipe.instructions;
     if (recipe.tags !== undefined) updateData.tags = recipe.tags;
 
-    const { data, error } = await this.supabase
+    const { data, error } = await supabase
       .from('recipes')
       .update(updateData)
       .eq('id', id)
-      .eq('source_type', 'manual')
       .select()
       .single();
 
     if (error || !data) {
       console.error('Error updating recipe:', error);
-      throw new Error('Failed to update recipe');
+      throw new Error(`Failed to update recipe: ${error?.message}`);
     }
 
     return databaseRecipeToRecipe(data as DatabaseRecipe);
   }
 
   async deleteRecipe(id: string): Promise<void> {
-    // Personal use - no authentication required
-    const { error } = await this.supabase
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
       .from('recipes')
       .delete()
-      .eq('id', id)
-      .eq('source_type', 'manual');
+      .eq('id', id);
 
     if (error) {
       console.error('Error deleting recipe:', error);
-      throw new Error('Failed to delete recipe');
+      throw new Error(`Failed to delete recipe: ${error?.message}`);
     }
   }
 }

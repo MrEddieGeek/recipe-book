@@ -6,11 +6,11 @@ import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
 import { Recipe, Ingredient, Instruction } from '@/lib/adapters/types';
-import { RecipeFormSchema } from '@/lib/utils/validation';
+import { RecipeFormSchema, RecipeFormData } from '@/lib/utils/validation';
 
 interface RecipeFormProps {
   recipe?: Recipe;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: RecipeFormData) => Promise<void>;
   submitLabel?: string;
 }
 
