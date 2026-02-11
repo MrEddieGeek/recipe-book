@@ -55,7 +55,14 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      console.error('Auth error:', err);
+      // Don't display raw error messages that might contain tokens
+      const errorMessage = err.message || 'An error occurred';
+      if (errorMessage.includes('Bearer') || errorMessage.includes('eyJ')) {
+        setError('Authentication failed. Please check your connection and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
