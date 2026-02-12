@@ -33,13 +33,16 @@ export default function SaveToMyRecipesButton({ recipe }: SaveToMyRecipesButtonP
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(data.error || 'Failed to save');
+      }
 
       setSaved(true);
       const savedRecipe = await res.json();
       setTimeout(() => router.push(`/recipes/${savedRecipe.id}`), 500);
-    } catch {
-      alert('Failed to save recipe. Please try again.');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save recipe. Please try again.');
     } finally {
       setSaving(false);
     }
