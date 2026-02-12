@@ -31,7 +31,7 @@ function extractIngredients(meal: MealDBMeal): Ingredient[] {
       ingredients.push({
         item,
         amount: match ? match[1].trim() : measureStr,
-        unit: match ? match[2].trim() || 'to taste' : 'to taste',
+        unit: match ? match[2].trim() || 'al gusto' : 'al gusto',
       });
     }
   }
@@ -64,7 +64,7 @@ function mealToRecipe(meal: MealDBMeal): Recipe {
   return {
     id: `mealdb-${meal.idMeal}`,
     title: meal.strMeal,
-    description: `${meal.strArea} ${meal.strCategory} dish`,
+    description: `Plato de ${meal.strCategory} — Cocina ${meal.strArea}`,
     imageUrl: meal.strMealThumb,
     ingredients: extractIngredients(meal),
     instructions: parseInstructions(meal.strInstructions),
