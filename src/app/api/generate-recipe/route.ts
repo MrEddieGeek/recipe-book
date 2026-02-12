@@ -1,6 +1,6 @@
 // Server-side API route for AI recipe generation
-// Uses xAI (Grok) API — OpenAI-compatible format
-// Keeps XAI_API_KEY secret (never sent to the browser)
+// Uses Google Gemini API
+// Keeps GEMINI_API_KEY secret (never sent to the browser)
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ const RequestSchema = z.object({
 
 const SYSTEM_PROMPT = `You are a professional chef and recipe writer. Generate a recipe based on the user's request.
 
-You MUST respond with ONLY a valid JSON object (no markdown, no explanation) following this exact structure:
+You MUST respond with ONLY a valid JSON object (no markdown, no explanation, no code fences) following this exact structure:
 
 {
   "title": "Recipe Title",
@@ -37,10 +37,10 @@ Rules:
 - Respond with ONLY the JSON object, nothing else.`;
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.XAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return Response.json(
-      { error: 'AI recipe generation is not configured. Add XAI_API_KEY to your environment variables.' },
+      { error: 'AI recipe generation is not configured. Add GEMINI_API_KEY to your environment variables.' },
       { status: 503 }
     );
   }
@@ -53,26 +53,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'grok-3-mini-fast',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: body.prompt },
-        ],
-        max_tokens: 2048,
-        temperature: 0.7,
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ parts: [{ text: body.prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+            responseMimeType: 'application/json',
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.error('xAI API error:', response.status, errBody);
+      console.error('Gemini API error:', response.status, errBody);
       return Response.json(
         { error: 'Failed to generate recipe. Please try again.' },
         { status: 502 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!text) {
       return Response.json({ error: 'Empty response from AI.' }, { status: 502 });
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       source: {
         type: 'ai',
         id: `ai-${Date.now()}`,
-        name: 'Grok AI',
+        name: 'Gemini AI',
       },
     };
 
