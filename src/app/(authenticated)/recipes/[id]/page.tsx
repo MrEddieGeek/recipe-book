@@ -5,6 +5,7 @@ import RecipeDetail from '@/components/recipe/RecipeDetail';
 import Button from '@/components/ui/Button';
 import DeleteRecipeButton from '@/components/recipe/DeleteRecipeButton';
 import SaveToMyRecipesButton from '@/components/recipe/SaveToMyRecipesButton';
+import AddToShoppingListButton from '@/components/recipe/AddToShoppingListButton';
 
 interface RecipePageProps {
   params: Promise<{ id: string }>;
@@ -45,6 +46,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </Link>
 
         <div className="flex gap-2">
+          <AddToShoppingListButton recipe={recipe} />
           {isManual ? (
             <>
               <Link href={`/recipes/${id}/edit`}>
