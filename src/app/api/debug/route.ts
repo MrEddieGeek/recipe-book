@@ -16,7 +16,7 @@ export async function GET() {
   // Test Supabase insert
   const key = serviceKey || anonKey;
   if (url && key) {
-    const supabase = createClient(url, key);
+    const supabase = createClient(url.trim(), key.trim());
     const testRecipe = {
       user_id: null,
       title: 'Test Recipe (delete me)',
