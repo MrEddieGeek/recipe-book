@@ -1,5 +1,6 @@
 // Server-side API route for AI recipe generation
-// Keeps ANTHROPIC_API_KEY secret (never sent to the browser)
+// Uses xAI (Grok) API — OpenAI-compatible format
+// Keeps XAI_API_KEY secret (never sent to the browser)
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -36,10 +37,10 @@ Rules:
 - Respond with ONLY the JSON object, nothing else.`;
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === 'sk-ant-your-key') {
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) {
     return Response.json(
-      { error: 'AI recipe generation is not configured. Add ANTHROPIC_API_KEY to your environment variables.' },
+      { error: 'AI recipe generation is not configured. Add XAI_API_KEY to your environment variables.' },
       { status: 503 }
     );
   }
@@ -52,26 +53,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2048,
-        system: SYSTEM_PROMPT,
+        model: 'grok-3-mini-fast',
         messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: body.prompt },
         ],
+        max_tokens: 2048,
+        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.error('Anthropic API error:', response.status, errBody);
+      console.error('xAI API error:', response.status, errBody);
       return Response.json(
         { error: 'Failed to generate recipe. Please try again.' },
         { status: 502 }
@@ -79,14 +80,17 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    const text = data.content?.[0]?.text;
+    const text = data.choices?.[0]?.message?.content;
 
     if (!text) {
       return Response.json({ error: 'Empty response from AI.' }, { status: 502 });
     }
 
+    // Strip markdown code fences if present
+    const jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
     // Parse the JSON from the response
-    const recipeData = JSON.parse(text);
+    const recipeData = JSON.parse(jsonStr);
 
     // Build a proper Recipe object
     const recipe: Recipe = {
@@ -102,7 +106,7 @@ export async function POST(request: NextRequest) {
       source: {
         type: 'ai',
         id: `ai-${Date.now()}`,
-        name: 'Claude AI',
+        name: 'Grok AI',
       },
     };
 
