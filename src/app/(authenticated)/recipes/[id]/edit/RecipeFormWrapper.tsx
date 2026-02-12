@@ -25,6 +25,6 @@ export default function RecipeFormWrapper({ recipe }: RecipeFormWrapperProps) {
   };
 
   return (
-    <RecipeForm recipe={recipe} onSubmit={handleSubmit} submitLabel="Update Recipe" />
+    <RecipeForm recipe={recipe} onSubmit={handleSubmit} submitLabel="Actualizar Receta" />
   );
 }

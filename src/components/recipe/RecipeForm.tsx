@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
@@ -17,9 +18,10 @@ interface RecipeFormProps {
 export default function RecipeForm({
   recipe,
   onSubmit,
-  submitLabel = 'Save Recipe',
+  submitLabel = 'Guardar Receta',
 }: RecipeFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -27,6 +29,8 @@ export default function RecipeForm({
   const [title, setTitle] = useState(recipe?.title || '');
   const [description, setDescription] = useState(recipe?.description || '');
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl || '');
+  const [imagePreview, setImagePreview] = useState(recipe?.imageUrl || '');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [prepTimeMinutes, setPrepTimeMinutes] = useState(
     recipe?.prepTimeMinutes || 0
   );
@@ -41,6 +45,53 @@ export default function RecipeForm({
     recipe?.instructions || [{ step: 1, description: '' }]
   );
   const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
+
+  // Image upload handler
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor selecciona un archivo de imagen válido.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen no debe superar los 5MB.');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to API
+    setUploadingImage(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Error al subir imagen' }));
+        throw new Error(data.error);
+      }
+
+      const { url } = await res.json();
+      setImageUrl(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir la imagen.');
+      setImagePreview(imageUrl); // Revert preview
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   // Ingredient handlers
   const addIngredient = () => {
@@ -93,13 +144,11 @@ export default function RecipeForm({
     setLoading(true);
 
     try {
-      // Parse tags
       const parsedTags = tags
         .split(',')
         .map((t) => t.trim())
         .filter((t) => t);
 
-      // Build form data
       const formData = {
         title,
         description: description || undefined,
@@ -112,17 +161,13 @@ export default function RecipeForm({
         tags: parsedTags,
       };
 
-      // Validate
       const validated = RecipeFormSchema.parse(formData);
-
-      // Submit
       await onSubmit(validated);
     } catch (err: any) {
       if (err.errors) {
-        // Zod validation error
         setError(err.errors[0].message);
       } else {
-        setError(err.message || 'An error occurred');
+        setError(err.message || 'Ocurrió un error');
       }
       setLoading(false);
     }
@@ -132,40 +177,94 @@ export default function RecipeForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Información Básica</h2>
 
         <Input
-          label="Recipe Title"
+          label="Título de la Receta"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Spaghetti Carbonara"
+          placeholder="ej., Spaghetti Carbonara"
           required
         />
 
         <Textarea
-          label="Description"
+          label="Descripción"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="A brief description of your recipe..."
+          placeholder="Una breve descripción de tu receta..."
           rows={3}
         />
 
-        <Input
-          label="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="https://example.com/image.jpg"
-          helperText="Optional: Enter a URL to a recipe image"
-        />
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Foto de la Receta
+          </label>
+
+          {/* Preview */}
+          {imagePreview && (
+            <div className="relative w-full h-48 mb-3 rounded-lg overflow-hidden bg-gray-100">
+              <Image
+                src={imagePreview}
+                alt="Vista previa"
+                fill
+                className="object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setImageUrl('');
+                  setImagePreview('');
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImage}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {uploadingImage ? 'Subiendo...' : 'Subir Foto'}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <Input
+              placeholder="O pegar URL de imagen"
+              value={imageUrl}
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setImagePreview(e.target.value);
+              }}
+              className="flex-1"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Times & Servings */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Details</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Detalles</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
-            label="Prep Time (minutes)"
+            label="Preparación (minutos)"
             type="number"
             value={prepTimeMinutes}
             onChange={(e) => setPrepTimeMinutes(Number(e.target.value))}
@@ -173,7 +272,7 @@ export default function RecipeForm({
           />
 
           <Input
-            label="Cook Time (minutes)"
+            label="Cocción (minutos)"
             type="number"
             value={cookTimeMinutes}
             onChange={(e) => setCookTimeMinutes(Number(e.target.value))}
@@ -181,7 +280,7 @@ export default function RecipeForm({
           />
 
           <Input
-            label="Servings"
+            label="Porciones"
             type="number"
             value={servings}
             onChange={(e) => setServings(Number(e.target.value))}
@@ -190,20 +289,20 @@ export default function RecipeForm({
         </div>
 
         <Input
-          label="Tags"
+          label="Etiquetas"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
-          placeholder="e.g., Italian, Pasta, Quick"
-          helperText="Separate tags with commas"
+          placeholder="ej., Italiana, Pasta, Rápida"
+          helperText="Separa las etiquetas con comas"
         />
       </div>
 
       {/* Ingredients */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Ingredients</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Ingredientes</h2>
           <Button type="button" onClick={addIngredient} size="sm" variant="secondary">
-            Add Ingredient
+            Agregar Ingrediente
           </Button>
         </div>
 
@@ -211,7 +310,7 @@ export default function RecipeForm({
           {ingredients.map((ingredient, index) => (
             <div key={index} className="flex gap-2">
               <Input
-                placeholder="Ingredient"
+                placeholder="Ingrediente"
                 value={ingredient.item}
                 onChange={(e) =>
                   updateIngredient(index, 'item', e.target.value)
@@ -220,7 +319,7 @@ export default function RecipeForm({
                 required
               />
               <Input
-                placeholder="Amount"
+                placeholder="Cantidad"
                 value={ingredient.amount}
                 onChange={(e) =>
                   updateIngredient(index, 'amount', e.target.value)
@@ -229,7 +328,7 @@ export default function RecipeForm({
                 required
               />
               <Input
-                placeholder="Unit"
+                placeholder="Unidad"
                 value={ingredient.unit}
                 onChange={(e) =>
                   updateIngredient(index, 'unit', e.target.value)
@@ -266,9 +365,9 @@ export default function RecipeForm({
       {/* Instructions */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Instructions</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Instrucciones</h2>
           <Button type="button" onClick={addInstruction} size="sm" variant="secondary">
-            Add Step
+            Agregar Paso
           </Button>
         </div>
 
@@ -279,7 +378,7 @@ export default function RecipeForm({
                 {instruction.step}
               </div>
               <Textarea
-                placeholder="Describe this step..."
+                placeholder="Describe este paso..."
                 value={instruction.description}
                 onChange={(e) => updateInstruction(index, e.target.value)}
                 rows={2}
@@ -326,10 +425,10 @@ export default function RecipeForm({
           variant="secondary"
           disabled={loading}
         >
-          Cancel
+          Cancelar
         </Button>
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? 'Saving...' : submitLabel}
+        <Button type="submit" disabled={loading || uploadingImage} className="flex-1">
+          {loading ? 'Guardando...' : submitLabel}
         </Button>
       </div>
     </form>

@@ -26,8 +26,8 @@ export default function DeleteRecipeButton({
       router.push('/recipes');
       router.refresh();
     } catch (error) {
-      console.error('Error deleting recipe:', error);
-      alert('Failed to delete recipe');
+      console.error('Error al eliminar receta:', error);
+      alert('Error al eliminar la receta');
       setLoading(false);
     }
   };
@@ -52,13 +52,13 @@ export default function DeleteRecipeButton({
             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
           />
         </svg>
-        Delete
+        Eliminar
       </Button>
 
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Delete Recipe"
+        title="Eliminar Receta"
         footer={
           <>
             <Button
@@ -66,21 +66,21 @@ export default function DeleteRecipeButton({
               variant="secondary"
               disabled={loading}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button
               onClick={handleDelete}
               variant="danger"
               disabled={loading}
             >
-              {loading ? 'Deleting...' : 'Delete'}
+              {loading ? 'Eliminando...' : 'Eliminar'}
             </Button>
           </>
         }
       >
         <p className="text-gray-700">
-          Are you sure you want to delete <strong>{recipeTitle}</strong>? This
-          action cannot be undone.
+          ¿Estás seguro de que quieres eliminar <strong>{recipeTitle}</strong>? Esta
+          acción no se puede deshacer.
         </p>
       </Modal>
     </>

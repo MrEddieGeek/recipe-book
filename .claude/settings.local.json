@@ -15,7 +15,9 @@
       "Bash(curl:*)",
       "Bash(python3:*)",
       "Bash(ls:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:www.themealdb.com)",
+      "Bash(gh api:*)"
     ]
   }
 }

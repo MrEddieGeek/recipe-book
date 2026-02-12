@@ -10,31 +10,32 @@ const RequestSchema = z.object({
   prompt: z.string().min(3).max(500),
 });
 
-const SYSTEM_PROMPT = `You are a professional chef and recipe writer. Generate a recipe based on the user's request.
+const SYSTEM_PROMPT = `Eres un chef profesional y escritor de recetas. Genera una receta basada en la solicitud del usuario.
 
-You MUST respond with ONLY a valid JSON object (no markdown, no explanation, no code fences) following this exact structure:
+DEBES responder SOLO con un objeto JSON válido (sin markdown, sin explicación, sin bloques de código) siguiendo esta estructura exacta:
 
 {
-  "title": "Recipe Title",
-  "description": "A short, appetizing description of the dish (1-2 sentences).",
+  "title": "Título de la Receta",
+  "description": "Una descripción corta y apetitosa del plato (1-2 oraciones).",
   "prepTimeMinutes": 15,
   "cookTimeMinutes": 30,
   "servings": 4,
   "ingredients": [
-    {"item": "ingredient name", "amount": "1", "unit": "cup"}
+    {"item": "nombre del ingrediente", "amount": "1", "unit": "taza"}
   ],
   "instructions": [
-    {"step": 1, "description": "Clear instruction for this step."}
+    {"step": 1, "description": "Instrucción clara para este paso."}
   ],
-  "tags": ["tag1", "tag2"]
+  "tags": ["etiqueta1", "etiqueta2"]
 }
 
-Rules:
-- Keep ingredient amounts realistic and precise.
-- Instructions should be clear, concise, numbered steps.
-- Include 5-15 ingredients and 4-10 instruction steps.
-- Tags should include cuisine type, meal type, dietary info, and key ingredients.
-- Respond with ONLY the JSON object, nothing else.`;
+Reglas:
+- Las cantidades de ingredientes deben ser realistas y precisas.
+- Las instrucciones deben ser pasos claros, concisos y numerados.
+- Incluir 5-15 ingredientes y 4-10 pasos de instrucciones.
+- Las etiquetas deben incluir tipo de cocina, tipo de comida, información dietética e ingredientes clave.
+- TODO el contenido debe estar en ESPAÑOL.
+- Responde SOLO con el objeto JSON, nada más.`;
 
 export async function POST(request: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;

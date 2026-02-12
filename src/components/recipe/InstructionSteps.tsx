@@ -9,7 +9,7 @@ export default function InstructionSteps({
 }: InstructionStepsProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Instrucciones</h2>
       <ol className="space-y-4">
         {instructions.map((instruction) => (
           <li key={instruction.step} className="flex gap-4">

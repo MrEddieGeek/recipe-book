@@ -19,8 +19,8 @@ export default function NewRecipePage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Create New Recipe</h1>
-      <RecipeForm onSubmit={handleSubmit} submitLabel="Create Recipe" />
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Crear Nueva Receta</h1>
+      <RecipeForm onSubmit={handleSubmit} submitLabel="Crear Receta" />
     </div>
   );
 }

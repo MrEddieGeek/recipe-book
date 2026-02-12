@@ -8,12 +8,12 @@ import RecipeDetail from '@/components/recipe/RecipeDetail';
 import { Recipe } from '@/lib/adapters/types';
 
 const SUGGESTIONS = [
-  'A healthy chicken stir-fry with vegetables',
-  'Quick pasta dinner under 30 minutes',
-  'Vegetarian Mexican bowl',
-  'French dessert with chocolate',
-  'Easy meal prep lunch for the week',
-  'Comfort food for a rainy day',
+  'Un salteado de pollo saludable con verduras',
+  'Cena de pasta rápida en menos de 30 minutos',
+  'Bowl mexicano vegetariano',
+  'Postre francés con chocolate',
+  'Almuerzo fácil para preparar toda la semana',
+  'Comida reconfortante para un día lluvioso',
 ];
 
 export default function GenerateRecipePage() {
@@ -26,7 +26,7 @@ export default function GenerateRecipePage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || prompt.length < 3) {
-      setError('Please enter at least 3 characters.');
+      setError('Por favor ingresa al menos 3 caracteres.');
       return;
     }
 
@@ -42,14 +42,14 @@ export default function GenerateRecipePage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Failed to generate recipe' }));
+        const data = await res.json().catch(() => ({ error: 'Error al generar receta' }));
         throw new Error(data.error);
       }
 
       const recipe = await res.json();
       setGeneratedRecipe(recipe);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Algo salió mal. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -75,12 +75,12 @@ export default function GenerateRecipePage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) throw new Error('Error al guardar');
 
       const saved = await res.json();
       router.push(`/recipes/${saved.id}`);
     } catch {
-      setError('Failed to save recipe. Please try again.');
+      setError('Error al guardar la receta. Inténtalo de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -97,11 +97,11 @@ export default function GenerateRecipePage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Recipes
+          Volver a Recetas
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">AI Recipe Generator</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Generador de Recetas con IA</h1>
         <p className="text-gray-600 mt-1">
-          Describe what you want to cook and AI will create a recipe for you.
+          Describe lo que quieres cocinar y la IA creará una receta para ti.
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export default function GenerateRecipePage() {
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the recipe you want... e.g. 'A healthy chicken stir-fry with vegetables'"
+              placeholder="Describe la receta que quieres... ej. 'Un salteado de pollo saludable con verduras'"
               rows={3}
               maxLength={500}
               disabled={loading}
@@ -151,14 +151,14 @@ export default function GenerateRecipePage() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <Spinner size="sm" />
-                Generating recipe...
+                Generando receta...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Generate Recipe
+                Generar Receta
               </span>
             )}
           </Button>
@@ -168,10 +168,9 @@ export default function GenerateRecipePage() {
       {/* Generated Recipe */}
       {generatedRecipe && (
         <div>
-          {/* Action buttons */}
           <div className="flex gap-3 mb-6">
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save to My Recipes'}
+              {saving ? 'Guardando...' : 'Guardar en Mis Recetas'}
             </Button>
             <Button
               variant="secondary"
@@ -180,7 +179,7 @@ export default function GenerateRecipePage() {
                 setError('');
               }}
             >
-              Generate Another
+              Generar Otra
             </Button>
           </div>
 

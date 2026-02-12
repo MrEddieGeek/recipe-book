@@ -9,7 +9,7 @@ export default function Header({ user }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <h1 className="text-xl font-bold text-gray-900">
-              {user?.full_name || 'Recipe Book'}
+              {user?.full_name || 'Libro de Recetas'}
             </h1>
           </div>
         </div>

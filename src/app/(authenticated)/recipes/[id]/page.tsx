@@ -13,7 +13,6 @@ interface RecipePageProps {
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
 
-  // Fetch recipe — auto-routes to correct adapter based on ID prefix
   const recipe = await RecipeService.getRecipeById(id);
 
   if (!recipe) {
@@ -41,7 +40,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Recipes
+            Volver a Recetas
           </Button>
         </Link>
 
@@ -63,7 +62,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                     />
                   </svg>
-                  Edit
+                  Editar
                 </Button>
               </Link>
               <DeleteRecipeButton recipeId={id} recipeTitle={recipe.title} />
@@ -74,7 +73,6 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </div>
       </div>
 
-      {/* Recipe Content */}
       <RecipeDetail recipe={recipe} />
     </div>
   );

@@ -9,7 +9,7 @@ export default function Navigation() {
   const links = [
     {
       href: '/recipes',
-      label: 'Recipes',
+      label: 'Recetas',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -23,7 +23,7 @@ export default function Navigation() {
     },
     {
       href: '/meal-plan',
-      label: 'Meal Plan',
+      label: 'Planificar',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -37,7 +37,7 @@ export default function Navigation() {
     },
     {
       href: '/shopping-list',
-      label: 'Shopping',
+      label: 'Compras',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

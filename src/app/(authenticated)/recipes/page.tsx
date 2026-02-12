@@ -34,7 +34,7 @@ export default function RecipesPage() {
         setRecipes(await res.json());
       }
     } catch (error) {
-      console.error('Failed to fetch recipes:', error);
+      console.error('Error al buscar recetas:', error);
     } finally {
       setLoading(false);
     }
@@ -48,14 +48,14 @@ export default function RecipesPage() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Recipes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
         <div className="flex gap-2">
           <Link href="/recipes/generate">
             <Button variant="secondary" size="sm">
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              AI
+              IA
             </Button>
           </Link>
           <Link href="/recipes/new">
@@ -63,7 +63,7 @@ export default function RecipesPage() {
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              New
+              Nueva
             </Button>
           </Link>
         </div>
@@ -79,7 +79,7 @@ export default function RecipesPage() {
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          My Recipes
+          Mis Recetas
         </button>
         <button
           onClick={() => setActiveTab('discover')}
@@ -89,7 +89,7 @@ export default function RecipesPage() {
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          Discover
+          Descubrir
         </button>
       </div>
 
@@ -110,7 +110,7 @@ export default function RecipesPage() {
         </svg>
         <input
           type="text"
-          placeholder={activeTab === 'manual' ? 'Search my recipes...' : 'Search recipes online...'}
+          placeholder={activeTab === 'manual' ? 'Buscar en mis recetas...' : 'Buscar recetas en línea...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -140,18 +140,18 @@ export default function RecipesPage() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            {activeTab === 'manual' ? 'No recipes yet' : 'No recipes found'}
+            {activeTab === 'manual' ? 'Aún no hay recetas' : 'No se encontraron recetas'}
           </h2>
           <p className="text-gray-600 mb-6">
             {activeTab === 'manual'
-              ? 'Create your first recipe to get started!'
+              ? '¡Crea tu primera receta para comenzar!'
               : debouncedQuery
-                ? 'Try a different search term.'
-                : 'Search for a recipe to discover something new.'}
+                ? 'Prueba con otro término de búsqueda.'
+                : 'Busca una receta para descubrir algo nuevo.'}
           </p>
           {activeTab === 'manual' && (
             <Link href="/recipes/new">
-              <Button>Create Recipe</Button>
+              <Button>Crear Receta</Button>
             </Link>
           )}
         </div>

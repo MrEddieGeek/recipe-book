@@ -25,11 +25,11 @@ export default function RecipeSourceBadge({
 
     switch (type) {
       case 'manual':
-        return 'My Recipe';
+        return 'Mi Receta';
       case 'api':
         return 'API';
       case 'ai':
-        return 'AI Generated';
+        return 'IA Generada';
     }
   };
 
