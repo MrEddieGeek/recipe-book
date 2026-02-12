@@ -37,9 +37,37 @@ export async function GET() {
       checks.supabase_insert = `ERROR: ${error.message} (code: ${error.code})`;
     } else {
       checks.supabase_insert = `OK (id: ${data.id})`;
-      // Clean up test recipe
       await supabase.from('recipes').delete().eq('id', data.id);
       checks.supabase_cleanup = 'OK';
+    }
+  }
+
+  // Test xAI API
+  if (xaiKey) {
+    try {
+      const res = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${xaiKey.trim()}`,
+        },
+        body: JSON.stringify({
+          model: 'grok-3-mini-fast',
+          messages: [{ role: 'user', content: 'Say hello in one word.' }],
+          max_tokens: 10,
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        checks.xai_test = `ERROR ${res.status}: ${errBody}`;
+      } else {
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || 'no content';
+        checks.xai_test = `OK: "${reply}"`;
+      }
+    } catch (err) {
+      checks.xai_test = `ERROR: ${err instanceof Error ? err.message : String(err)}`;
     }
   }
 
