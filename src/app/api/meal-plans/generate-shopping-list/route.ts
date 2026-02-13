@@ -1,26 +1,24 @@
 import { NextRequest } from 'next/server';
 import { MealPlanService } from '@/lib/services/meal-plan-service';
 import { ShoppingListService } from '@/lib/services/shopping-list-service';
+import { GenerateShoppingListSchema } from '@/lib/utils/validation';
 
 export async function POST(request: NextRequest) {
   try {
-    const { startDate, endDate, listName } = await request.json();
+    const body = await request.json();
+    const validated = GenerateShoppingListSchema.parse(body);
 
-    if (!startDate || !endDate || !listName) {
-      return Response.json({ error: 'Datos incompletos' }, { status: 400 });
-    }
-
-    // Get all ingredients from the week
-    const ingredients = await MealPlanService.getWeekIngredients(startDate, endDate);
+    const ingredients = await MealPlanService.getWeekIngredients(
+      validated.startDate,
+      validated.endDate
+    );
 
     if (ingredients.length === 0) {
       return Response.json({ error: 'No hay comidas planificadas esta semana' }, { status: 400 });
     }
 
-    // Create a new shopping list
-    const list = await ShoppingListService.createList(listName);
+    const list = await ShoppingListService.createList(validated.listName);
 
-    // Add all ingredients
     await ShoppingListService.addIngredientsFromRecipe(
       list.id,
       ingredients.map((ing) => ({
@@ -32,7 +30,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ listId: list.id, itemCount: ingredients.length });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : 'Error al generar lista';
-    return Response.json({ error: msg }, { status: 500 });
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return Response.json({ error: 'Datos incompletos o inválidos' }, { status: 400 });
+    }
+    console.error('Generate shopping list error:', error);
+    return Response.json({ error: 'Error al generar lista' }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ShoppingListService } from '@/lib/services/shopping-list-service';
+import { ShoppingListNameSchema } from '@/lib/utils/validation';
 
 export async function GET() {
   const lists = await ShoppingListService.getLists();
@@ -8,14 +9,15 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name } = await request.json();
-    if (!name?.trim()) {
-      return Response.json({ error: 'El nombre es obligatorio' }, { status: 400 });
-    }
-    const list = await ShoppingListService.createList(name.trim());
+    const body = await request.json();
+    const validated = ShoppingListNameSchema.parse(body);
+    const list = await ShoppingListService.createList(validated.name);
     return Response.json(list);
   } catch (error) {
-    const msg = error instanceof Error ? error.message : 'Error al crear lista';
-    return Response.json({ error: msg }, { status: 500 });
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return Response.json({ error: 'Nombre inválido (1-255 caracteres)' }, { status: 400 });
+    }
+    console.error('Create shopping list error:', error);
+    return Response.json({ error: 'Error al crear lista' }, { status: 500 });
   }
 }

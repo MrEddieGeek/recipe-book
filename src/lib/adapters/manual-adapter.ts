@@ -50,8 +50,10 @@ export class ManualRecipeAdapter extends RecipeAdapter {
     }
 
     if (options.query) {
+      // Escape SQL LIKE wildcards to prevent wildcard injection
+      const safeQuery = options.query.replace(/[%_\\]/g, '\\$&');
       query = query.or(
-        `title.ilike.%${options.query}%,description.ilike.%${options.query}%`
+        `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%`
       );
     }
 

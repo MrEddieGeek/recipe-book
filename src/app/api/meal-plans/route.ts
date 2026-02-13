@@ -1,31 +1,41 @@
 import { NextRequest } from 'next/server';
 import { MealPlanService } from '@/lib/services/meal-plan-service';
+import { MealPlanCreateSchema, MealPlanDateRangeSchema } from '@/lib/utils/validation';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
 
-  if (!startDate || !endDate) {
-    return Response.json({ error: 'startDate and endDate required' }, { status: 400 });
+  try {
+    const validated = MealPlanDateRangeSchema.parse({ startDate, endDate });
+    const meals = await MealPlanService.getMealsForRange(validated.startDate, validated.endDate);
+    return Response.json(meals);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return Response.json({ error: 'Fechas inválidas (YYYY-MM-DD)' }, { status: 400 });
+    }
+    console.error('Get meal plans error:', error);
+    return Response.json({ error: 'Error al obtener planes' }, { status: 500 });
   }
-
-  const meals = await MealPlanService.getMealsForRange(startDate, endDate);
-  return Response.json(meals);
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { recipeId, date, mealType, servings } = await request.json();
-
-    if (!recipeId || !date || !mealType) {
-      return Response.json({ error: 'Datos incompletos' }, { status: 400 });
-    }
-
-    const meal = await MealPlanService.addMeal(recipeId, date, mealType, servings);
+    const body = await request.json();
+    const validated = MealPlanCreateSchema.parse(body);
+    const meal = await MealPlanService.addMeal(
+      validated.recipeId,
+      validated.date,
+      validated.mealType,
+      validated.servings
+    );
     return Response.json(meal);
   } catch (error) {
-    const msg = error instanceof Error ? error.message : 'Error al agregar';
-    return Response.json({ error: msg }, { status: 500 });
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return Response.json({ error: 'Datos incompletos o inválidos' }, { status: 400 });
+    }
+    console.error('Add meal plan error:', error);
+    return Response.json({ error: 'Error al agregar comida' }, { status: 500 });
   }
 }

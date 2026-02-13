@@ -84,6 +84,11 @@ export class ApiRecipeAdapter extends RecipeAdapter {
     // Strip the "mealdb-" prefix if present
     const mealId = id.replace('mealdb-', '');
 
+    // Validate ID is numeric to prevent injection
+    if (!/^\d+$/.test(mealId)) {
+      return null;
+    }
+
     try {
       const res = await fetch(`${MEALDB_BASE}/lookup.php?i=${mealId}`, {
         next: { revalidate: 3600 }, // cache for 1 hour

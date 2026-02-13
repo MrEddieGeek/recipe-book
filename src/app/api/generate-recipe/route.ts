@@ -5,6 +5,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { Recipe } from '@/lib/adapters/types';
+import { AiRecipeResponseSchema } from '@/lib/utils/validation';
 
 const RequestSchema = z.object({
   prompt: z.string().min(3).max(500),
@@ -90,8 +91,9 @@ export async function POST(request: NextRequest) {
     // Strip markdown code fences if present
     const jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
 
-    // Parse the JSON from the response
-    const recipeData = JSON.parse(jsonStr);
+    // Parse and validate the JSON from the response
+    const rawData = JSON.parse(jsonStr);
+    const recipeData = AiRecipeResponseSchema.parse(rawData);
 
     // Build a proper Recipe object
     const recipe: Recipe = {
@@ -101,9 +103,9 @@ export async function POST(request: NextRequest) {
       prepTimeMinutes: recipeData.prepTimeMinutes,
       cookTimeMinutes: recipeData.cookTimeMinutes,
       servings: recipeData.servings,
-      ingredients: recipeData.ingredients || [],
-      instructions: recipeData.instructions || [],
-      tags: recipeData.tags || [],
+      ingredients: recipeData.ingredients,
+      instructions: recipeData.instructions,
+      tags: recipeData.tags,
       source: {
         type: 'ai',
         id: `ai-${Date.now()}`,
