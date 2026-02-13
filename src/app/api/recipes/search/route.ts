@@ -1,7 +1,11 @@
 import { NextRequest } from 'next/server';
 import { RecipeService } from '@/lib/services/recipe-service';
+import { checkRateLimit } from '@/lib/utils/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const rl = checkRateLimit('recipes-search');
+  if (rl) return rl;
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q') || '';
   const source = searchParams.get('source') || 'all';

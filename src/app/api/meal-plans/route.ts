@@ -1,8 +1,12 @@
 import { NextRequest } from 'next/server';
 import { MealPlanService } from '@/lib/services/meal-plan-service';
 import { MealPlanCreateSchema, MealPlanDateRangeSchema } from '@/lib/utils/validation';
+import { checkRateLimit, checkBodySize } from '@/lib/utils/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const rl = checkRateLimit('meal-plans-get');
+  if (rl) return rl;
+
   const { searchParams } = new URL(request.url);
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
@@ -21,6 +25,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit('meal-plans-create');
+  if (rl) return rl;
+  const bs = checkBodySize(request.headers.get('content-length'));
+  if (bs) return bs;
+
   try {
     const body = await request.json();
     const validated = MealPlanCreateSchema.parse(body);

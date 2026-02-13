@@ -5,6 +5,15 @@ import { RecipeAdapter } from './base-adapter';
 import { Recipe, Ingredient, Instruction, RecipeSearchOptions } from './types';
 
 const MEALDB_BASE = 'https://www.themealdb.com/api/json/v1/1';
+const FETCH_TIMEOUT_MS = 10_000;
+
+function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...init, signal: controller.signal }).finally(() =>
+    clearTimeout(timeout)
+  );
+}
 
 interface MealDBMeal {
   idMeal: string;
@@ -90,7 +99,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
     }
 
     try {
-      const res = await fetch(`${MEALDB_BASE}/lookup.php?i=${mealId}`, {
+      const res = await fetchWithTimeout(`${MEALDB_BASE}/lookup.php?i=${mealId}`, {
         next: { revalidate: 3600 }, // cache for 1 hour
       });
       const json = await res.json();
@@ -109,7 +118,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
     try {
       if (options.query) {
         // Search by name
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `${MEALDB_BASE}/search.php?s=${encodeURIComponent(options.query)}`,
           { next: { revalidate: 3600 } }
         );
@@ -120,7 +129,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
       } else {
         // No query — return a random selection
         const fetches = Array.from({ length: 8 }, () =>
-          fetch(`${MEALDB_BASE}/random.php`, { cache: 'no-store' })
+          fetchWithTimeout(`${MEALDB_BASE}/random.php`, { cache: 'no-store' })
             .then((r) => r.json())
             .then((j) => (j.meals ? mealToRecipe(j.meals[0]) : null))
             .catch(() => null)
@@ -149,7 +158,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
    */
   async getCategories(): Promise<string[]> {
     try {
-      const res = await fetch(`${MEALDB_BASE}/list.php?c=list`, {
+      const res = await fetchWithTimeout(`${MEALDB_BASE}/list.php?c=list`, {
         next: { revalidate: 86400 }, // cache for 24h
       });
       const json = await res.json();
@@ -164,7 +173,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
    */
   async getAreas(): Promise<string[]> {
     try {
-      const res = await fetch(`${MEALDB_BASE}/list.php?a=list`, {
+      const res = await fetchWithTimeout(`${MEALDB_BASE}/list.php?a=list`, {
         next: { revalidate: 86400 },
       });
       const json = await res.json();
@@ -179,7 +188,7 @@ export class ApiRecipeAdapter extends RecipeAdapter {
    */
   async searchByCategory(category: string): Promise<Recipe[]> {
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `${MEALDB_BASE}/filter.php?c=${encodeURIComponent(category)}`,
         { next: { revalidate: 3600 } }
       );

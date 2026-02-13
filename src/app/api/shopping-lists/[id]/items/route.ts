@@ -1,12 +1,18 @@
 import { NextRequest } from 'next/server';
 import { ShoppingListService } from '@/lib/services/shopping-list-service';
 import { ShoppingListItemSchema, ShoppingListIngredientsSchema } from '@/lib/utils/validation';
+import { checkRateLimit, checkBodySize } from '@/lib/utils/rate-limit';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const rl = checkRateLimit('shopping-list-items-add');
+  if (rl) return rl;
+  const bs = checkBodySize(request.headers.get('content-length'));
+  if (bs) return bs;
+
   const { id } = await params;
   try {
     const body = await request.json();

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/utils/rate-limit';
 
 const ALLOWED_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -35,6 +36,9 @@ function detectImageType(buffer: Uint8Array): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit('upload-image', RATE_LIMITS.UPLOAD_IMAGE);
+  if (rl) return rl;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 

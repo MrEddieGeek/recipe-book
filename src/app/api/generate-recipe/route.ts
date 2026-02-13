@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { Recipe } from '@/lib/adapters/types';
 import { AiRecipeResponseSchema } from '@/lib/utils/validation';
+import { checkRateLimit, checkBodySize, RATE_LIMITS } from '@/lib/utils/rate-limit';
 
 const RequestSchema = z.object({
   prompt: z.string().min(3).max(500),
@@ -39,6 +40,11 @@ Reglas:
 - Responde SOLO con el objeto JSON, nada más.`;
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit('generate-recipe', RATE_LIMITS.GENERATE_RECIPE);
+  if (rl) return rl;
+  const bs = checkBodySize(request.headers.get('content-length'));
+  if (bs) return bs;
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return Response.json(
@@ -55,22 +61,37 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ parts: [{ text: body.prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048,
-            responseMimeType: 'application/json',
-          },
-        }),
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+
+    let response: globalThis.Response;
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: [{ parts: [{ text: body.prompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 2048,
+              responseMimeType: 'application/json',
+            },
+          }),
+        }
+      );
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return Response.json({ error: 'La generación tardó demasiado. Intenta de nuevo.' }, { status: 504 });
       }
-    );
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       const errBody = await response.text();

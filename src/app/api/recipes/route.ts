@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
 import { RecipeService } from '@/lib/services/recipe-service';
 import { RecipeFormSchema } from '@/lib/utils/validation';
+import { checkRateLimit, checkBodySize } from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit('recipes-create');
+  if (rl) return rl;
+  const bs = checkBodySize(request.headers.get('content-length'));
+  if (bs) return bs;
+
   try {
     const body = await request.json();
     const validated = RecipeFormSchema.parse(body);

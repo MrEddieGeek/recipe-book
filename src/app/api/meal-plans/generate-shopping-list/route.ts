@@ -2,8 +2,14 @@ import { NextRequest } from 'next/server';
 import { MealPlanService } from '@/lib/services/meal-plan-service';
 import { ShoppingListService } from '@/lib/services/shopping-list-service';
 import { GenerateShoppingListSchema } from '@/lib/utils/validation';
+import { checkRateLimit, checkBodySize } from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit('meal-plan-generate-list');
+  if (rl) return rl;
+  const bs = checkBodySize(request.headers.get('content-length'));
+  if (bs) return bs;
+
   try {
     const body = await request.json();
     const validated = GenerateShoppingListSchema.parse(body);
