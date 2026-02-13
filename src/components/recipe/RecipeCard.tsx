@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Card from '@/components/ui/Card';
 import RecipeSourceBadge from './RecipeSourceBadge';
+import FavoriteButton from './FavoriteButton';
 import { Recipe } from '@/lib/adapters/types';
 
 interface RecipeCardProps {
@@ -40,6 +41,16 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
+            </div>
+          )}
+
+          {/* Favorite Button (manual recipes only) */}
+          {recipe.source.type === 'manual' && (
+            <div className="absolute top-2 left-2">
+              <FavoriteButton
+                recipeId={recipe.id}
+                initialFavorited={recipe.isFavorited}
+              />
             </div>
           )}
 

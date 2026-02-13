@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Recipe } from '@/lib/adapters/types';
 import RecipeSourceBadge from './RecipeSourceBadge';
+import FavoriteButton from './FavoriteButton';
 import IngredientList from './IngredientList';
 import InstructionSteps from './InstructionSteps';
 
@@ -34,6 +35,13 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
             sourceType={recipe.source.type}
             sourceName={recipe.source.name}
           />
+          {recipe.source.type === 'manual' && (
+            <FavoriteButton
+              recipeId={recipe.id}
+              initialFavorited={recipe.isFavorited}
+              size="md"
+            />
+          )}
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">

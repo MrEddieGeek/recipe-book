@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { Recipe } from '@/lib/adapters/types';
 
-type SourceTab = 'manual' | 'discover';
+type SourceTab = 'manual' | 'favorites' | 'discover';
 
 export default function RecipesPage() {
   const [activeTab, setActiveTab] = useState<SourceTab>('manual');
@@ -25,7 +25,7 @@ export default function RecipesPage() {
   const fetchRecipes = useCallback(async () => {
     setLoading(true);
     try {
-      const source = activeTab === 'manual' ? 'manual' : 'api';
+      const source = activeTab === 'manual' ? 'manual' : activeTab === 'favorites' ? 'favorites' : 'api';
       const params = new URLSearchParams({ source });
       if (debouncedQuery) params.set('q', debouncedQuery);
 
@@ -82,6 +82,19 @@ export default function RecipesPage() {
           Mis Recetas
         </button>
         <button
+          onClick={() => setActiveTab('favorites')}
+          className={`flex items-center gap-1 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'favorites'
+              ? 'border-red-500 text-red-500'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <svg className="w-4 h-4" fill={activeTab === 'favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          Favoritos
+        </button>
+        <button
           onClick={() => setActiveTab('discover')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'discover'
@@ -110,7 +123,7 @@ export default function RecipesPage() {
         </svg>
         <input
           type="text"
-          placeholder={activeTab === 'manual' ? 'Buscar en mis recetas...' : 'Buscar recetas en línea...'}
+          placeholder={activeTab === 'manual' ? 'Buscar en mis recetas...' : activeTab === 'favorites' ? 'Buscar en favoritos...' : 'Buscar recetas en línea...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -140,14 +153,20 @@ export default function RecipesPage() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            {activeTab === 'manual' ? 'Aún no hay recetas' : 'No se encontraron recetas'}
+            {activeTab === 'manual'
+              ? 'Aún no hay recetas'
+              : activeTab === 'favorites'
+                ? 'Sin favoritos'
+                : 'No se encontraron recetas'}
           </h2>
           <p className="text-gray-600 mb-6">
             {activeTab === 'manual'
               ? '¡Crea tu primera receta para comenzar!'
-              : debouncedQuery
-                ? 'Prueba con otro término de búsqueda.'
-                : 'Busca una receta para descubrir algo nuevo.'}
+              : activeTab === 'favorites'
+                ? 'Marca recetas con el corazón para verlas aquí.'
+                : debouncedQuery
+                  ? 'Prueba con otro término de búsqueda.'
+                  : 'Busca una receta para descubrir algo nuevo.'}
           </p>
           {activeTab === 'manual' && (
             <Link href="/recipes/new">
