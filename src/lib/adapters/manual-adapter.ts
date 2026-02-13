@@ -123,6 +123,44 @@ export class ManualRecipeAdapter extends RecipeAdapter {
     return databaseRecipeToRecipe(data as DatabaseRecipe);
   }
 
+  async toggleFavorite(id: string): Promise<boolean> {
+    const supabase = getSupabaseAdmin();
+
+    // Get current state
+    const { data } = await supabase
+      .from('recipes')
+      .select('is_favorited')
+      .eq('id', id)
+      .single();
+
+    if (!data) throw new Error('Recipe not found');
+
+    const newValue = !data.is_favorited;
+    const { error } = await supabase
+      .from('recipes')
+      .update({ is_favorited: newValue })
+      .eq('id', id);
+
+    if (error) throw new Error(`Failed to toggle favorite: ${error.message}`);
+    return newValue;
+  }
+
+  async getFavorites(): Promise<Recipe[]> {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from('recipes')
+      .select('*')
+      .eq('is_favorited', true)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching favorites:', error);
+      return [];
+    }
+
+    return (data as DatabaseRecipe[]).map(databaseRecipeToRecipe);
+  }
+
   async deleteRecipe(id: string): Promise<void> {
     const supabase = getSupabaseAdmin();
     const { error } = await supabase

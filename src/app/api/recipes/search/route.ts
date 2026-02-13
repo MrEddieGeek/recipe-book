@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
       case 'api':
         recipes = await RecipeService.searchApiRecipes(options);
         break;
+      case 'favorites':
+        recipes = await RecipeService.getFavorites();
+        break;
       case 'all':
       default:
         recipes = await RecipeService.searchAllSources(options);

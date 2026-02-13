@@ -1,6 +1,7 @@
 // High-level recipe service - orchestrates adapters
 
 import { RecipeAdapterFactory } from '../adapters/adapter-factory';
+import { ManualRecipeAdapter } from '../adapters/manual-adapter';
 import { Recipe, RecipeSearchOptions } from '../adapters/types';
 
 export class RecipeService {
@@ -74,6 +75,22 @@ export class RecipeService {
   static async deleteManualRecipe(id: string): Promise<void> {
     const adapter = RecipeAdapterFactory.getAdapter('manual');
     return adapter.deleteRecipe!(id);
+  }
+
+  /**
+   * Toggle favorite status on a manual recipe
+   */
+  static async toggleFavorite(id: string): Promise<boolean> {
+    const adapter = RecipeAdapterFactory.getAdapter('manual') as ManualRecipeAdapter;
+    return adapter.toggleFavorite(id);
+  }
+
+  /**
+   * Get all favorited recipes
+   */
+  static async getFavorites(): Promise<Recipe[]> {
+    const adapter = RecipeAdapterFactory.getAdapter('manual') as ManualRecipeAdapter;
+    return adapter.getFavorites();
   }
 
   /**

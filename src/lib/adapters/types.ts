@@ -12,6 +12,7 @@ export interface Recipe {
   instructions: Instruction[];
   tags: string[];
   source: RecipeSource;
+  isFavorited?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -55,6 +56,7 @@ export interface DatabaseRecipe {
   ingredients: Ingredient[];
   instructions: Instruction[];
   tags: string[];
+  is_favorited: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +79,7 @@ export function databaseRecipeToRecipe(dbRecipe: DatabaseRecipe): Recipe {
       id: dbRecipe.source_id || dbRecipe.id,
       name: getSourceName(dbRecipe.source_type),
     },
+    isFavorited: dbRecipe.is_favorited,
     createdAt: new Date(dbRecipe.created_at),
     updatedAt: new Date(dbRecipe.updated_at),
   };
@@ -100,6 +103,7 @@ export function recipeToDatabaseRecipe(
     ingredients: recipe.ingredients,
     instructions: recipe.instructions,
     tags: recipe.tags,
+    is_favorited: false,
   };
 }
 
