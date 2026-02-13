@@ -137,7 +137,7 @@ export default function ShoppingListPage() {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => setActiveList(null)}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -151,7 +151,7 @@ export default function ShoppingListPage() {
           )}
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{activeList.name}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{activeList.name}</h1>
 
         {/* Add item */}
         <div className="flex gap-2 mb-6">
@@ -161,7 +161,7 @@ export default function ShoppingListPage() {
             onChange={(e) => setNewItemText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
             placeholder="Agregar artículo..."
-            className="flex-1 px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Button onClick={handleAddItem} disabled={!newItemText.trim()}>
             Agregar
@@ -179,7 +179,7 @@ export default function ShoppingListPage() {
             {unchecked.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100 group"
+                className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 group"
               >
                 <input
                   type="checkbox"
@@ -188,9 +188,9 @@ export default function ShoppingListPage() {
                   className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-gray-900">{item.item}</span>
+                  <span className="text-gray-900 dark:text-gray-100">{item.item}</span>
                   {(item.amount || item.unit) && (
-                    <span className="text-gray-500 ml-2 text-sm">
+                    <span className="text-gray-500 dark:text-gray-400 ml-2 text-sm">
                       {item.amount} {item.unit}
                     </span>
                   )}
@@ -217,7 +217,7 @@ export default function ShoppingListPage() {
                 {checked.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group"
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg group"
                   >
                     <input
                       type="checkbox"
@@ -255,7 +255,7 @@ export default function ShoppingListPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Listas de Compras</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Listas de Compras</h1>
         <Button onClick={() => setShowNewListInput(true)}>
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -274,7 +274,7 @@ export default function ShoppingListPage() {
             onKeyDown={(e) => e.key === 'Enter' && handleCreateList()}
             placeholder="Nombre de la lista..."
             autoFocus
-            className="flex-1 px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Button onClick={handleCreateList} disabled={creatingList || !newListName.trim()}>
             {creatingList ? 'Creando...' : 'Crear'}
@@ -291,8 +291,8 @@ export default function ShoppingListPage() {
           <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Sin listas de compras</h2>
-          <p className="text-gray-600 mb-6">Crea una lista para organizar tus compras.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Sin listas de compras</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Crea una lista para organizar tus compras.</p>
           <Button onClick={() => setShowNewListInput(true)}>Crear Lista</Button>
         </div>
       ) : (
@@ -300,11 +300,11 @@ export default function ShoppingListPage() {
           {lists.map((list) => (
             <div
               key={list.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors cursor-pointer"
               onClick={() => fetchListDetail(list.id)}
             >
               <div>
-                <h3 className="font-medium text-gray-900">{list.name}</h3>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">{list.name}</h3>
                 <p className="text-sm text-gray-500">
                   {new Date(list.created_at).toLocaleDateString('es-ES', {
                     day: 'numeric',

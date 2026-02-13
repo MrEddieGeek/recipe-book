@@ -190,7 +190,7 @@ export default function MealPlanPage() {
     <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Planificación de Comidas</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Planificación de Comidas</h1>
         <div className="flex items-center gap-2">
           {totalMeals > 0 && (
             <Button
@@ -209,7 +209,7 @@ export default function MealPlanPage() {
       </div>
 
       {listSuccess && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm flex items-center gap-2">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -218,20 +218,20 @@ export default function MealPlanPage() {
       )}
 
       {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-4 bg-white rounded-lg border border-gray-200 p-3">
-        <button onClick={prevWeek} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center justify-between mb-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <button onClick={prevWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="text-center">
-          <p className="font-semibold text-gray-900">{weekLabel}</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-100">{weekLabel}</p>
           <button onClick={goToday} className="text-xs text-blue-600 hover:text-blue-800">
             Ir a hoy
           </button>
         </div>
-        <button onClick={nextWeek} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onClick={nextWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -255,10 +255,10 @@ export default function MealPlanPage() {
                     return (
                       <th
                         key={i}
-                        className={`p-2 text-center ${isToday ? 'bg-blue-50 rounded-t-lg' : ''}`}
+                        className={`p-2 text-center ${isToday ? 'bg-blue-50 dark:bg-blue-900/30 rounded-t-lg' : ''}`}
                       >
                         <div className="text-xs text-gray-500 font-medium">{DAY_NAMES[i]}</div>
-                        <div className={`text-lg font-bold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                        <div className={`text-lg font-bold ${isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
                           {day.getDate()}
                         </div>
                       </th>
@@ -281,13 +281,13 @@ export default function MealPlanPage() {
                       return (
                         <td
                           key={i}
-                          className={`p-1 align-top border border-gray-100 min-h-[80px] ${isToday ? 'bg-blue-50/50' : ''}`}
+                          className={`p-1 align-top border border-gray-100 dark:border-gray-700 min-h-[80px] ${isToday ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
                         >
                           <div className="min-h-[70px] space-y-1">
                             {slotMeals.map((meal) => (
                               <div
                                 key={meal.id}
-                                className="group relative bg-white rounded-md border border-gray-200 p-1.5 text-xs hover:shadow-sm transition-shadow"
+                                className="group relative bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 p-1.5 text-xs hover:shadow-sm transition-shadow"
                               >
                                 <div className="flex items-center gap-1.5">
                                   {meal.recipe?.image_url && (
@@ -299,7 +299,7 @@ export default function MealPlanPage() {
                                       className="rounded object-cover w-7 h-7 flex-shrink-0"
                                     />
                                   )}
-                                  <span className="font-medium text-gray-800 line-clamp-2 leading-tight">
+                                  <span className="font-medium text-gray-800 dark:text-gray-200 line-clamp-2 leading-tight">
                                     {meal.recipe?.title || 'Receta'}
                                   </span>
                                 </div>
@@ -340,10 +340,10 @@ export default function MealPlanPage() {
               return (
                 <div
                   key={i}
-                  className={`bg-white rounded-lg border ${isToday ? 'border-blue-300 ring-1 ring-blue-100' : 'border-gray-200'}`}
+                  className={`bg-white dark:bg-gray-800 rounded-lg border ${isToday ? 'border-blue-300 dark:border-blue-600 ring-1 ring-blue-100 dark:ring-blue-900' : 'border-gray-200 dark:border-gray-700'}`}
                 >
-                  <div className={`px-4 py-2 border-b ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}>
-                    <span className={`font-semibold ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
+                  <div className={`px-4 py-2 border-b ${isToday ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700'}`}>
+                    <span className={`font-semibold ${isToday ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
                       {DAY_NAMES_FULL[i]}
                     </span>
                     <span className="text-sm text-gray-500 ml-2">
@@ -360,7 +360,7 @@ export default function MealPlanPage() {
                           {slotMeals.map((meal) => (
                             <div
                               key={meal.id}
-                              className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg mb-1 group"
+                              className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-1 group"
                             >
                               {meal.recipe?.image_url && (
                                 <Image
@@ -371,7 +371,7 @@ export default function MealPlanPage() {
                                   className="rounded object-cover w-10 h-10 flex-shrink-0"
                                 />
                               )}
-                              <span className="flex-1 text-sm font-medium text-gray-800">
+                              <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">
                                 {meal.recipe?.title || 'Receta'}
                               </span>
                               <button
@@ -408,11 +408,11 @@ export default function MealPlanPage() {
       {pickerOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="fixed inset-0 bg-black/40" onClick={() => setPickerOpen(false)} />
-          <div className="relative bg-white w-full sm:max-w-md sm:rounded-xl rounded-t-xl max-h-[80vh] flex flex-col shadow-xl">
+          <div className="relative bg-white dark:bg-gray-800 w-full sm:max-w-md sm:rounded-xl rounded-t-xl max-h-[80vh] flex flex-col shadow-xl">
             {/* Modal Header */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-gray-900">Agregar Receta</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Agregar Receta</h2>
                 <button
                   onClick={() => setPickerOpen(false)}
                   className="text-gray-400 hover:text-gray-600 p-1"
@@ -436,7 +436,7 @@ export default function MealPlanPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar receta..."
                 autoFocus
-                className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -457,7 +457,7 @@ export default function MealPlanPage() {
                       key={recipe.id}
                       onClick={() => handleAddMeal(recipe.id)}
                       disabled={adding}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors text-left disabled:opacity-50"
+                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-left disabled:opacity-50"
                     >
                       {recipe.imageUrl ? (
                         <Image
@@ -474,7 +474,7 @@ export default function MealPlanPage() {
                           </svg>
                         </div>
                       )}
-                      <span className="font-medium text-gray-800">{recipe.title}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">{recipe.title}</span>
                     </button>
                   ))}
                 </div>

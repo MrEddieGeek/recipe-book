@@ -101,7 +101,7 @@ export default function AddToShoppingListButton({ recipe }: AddToShoppingListBut
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4">
+          <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-4">
             {success ? (
               <div className="flex items-center gap-2 text-green-600 py-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ export default function AddToShoppingListButton({ recipe }: AddToShoppingListBut
               </div>
             ) : (
               <>
-                <p className="text-sm font-medium text-gray-700 mb-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Agregar {recipe.ingredients.length} ingrediente(s) a:
                 </p>
 
@@ -125,7 +125,7 @@ export default function AddToShoppingListButton({ recipe }: AddToShoppingListBut
                         key={list.id}
                         onClick={() => handleAddToList(list.id)}
                         disabled={adding}
-                        className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors disabled:opacity-50"
+                        className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300 dark:text-gray-200 transition-colors disabled:opacity-50"
                       >
                         {list.name}
                       </button>
@@ -137,8 +137,8 @@ export default function AddToShoppingListButton({ recipe }: AddToShoppingListBut
                 )}
 
                 {/* Create new list */}
-                <div className="border-t pt-3">
-                  <p className="text-xs text-gray-500 mb-2">O crear nueva lista:</p>
+                <div className="border-t dark:border-gray-700 pt-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">O crear nueva lista:</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -146,7 +146,7 @@ export default function AddToShoppingListButton({ recipe }: AddToShoppingListBut
                       onChange={(e) => setNewListName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleCreateAndAdd()}
                       placeholder="Nombre..."
-                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <Button
                       size="sm"

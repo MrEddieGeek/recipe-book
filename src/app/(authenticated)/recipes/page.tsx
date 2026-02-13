@@ -48,7 +48,7 @@ export default function RecipesPage() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Recetas</h1>
         <div className="flex gap-2">
           <Link href="/recipes/generate">
             <Button variant="secondary" size="sm">
@@ -70,13 +70,13 @@ export default function RecipesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-4">
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
         <button
           onClick={() => setActiveTab('manual')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'manual'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
           }`}
         >
           Mis Recetas
@@ -86,7 +86,7 @@ export default function RecipesPage() {
           className={`flex items-center gap-1 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'favorites'
               ? 'border-red-500 text-red-500'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
           }`}
         >
           <svg className="w-4 h-4" fill={activeTab === 'favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ export default function RecipesPage() {
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'discover'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
           }`}
         >
           Descubrir
@@ -126,7 +126,7 @@ export default function RecipesPage() {
           placeholder={activeTab === 'manual' ? 'Buscar en mis recetas...' : activeTab === 'favorites' ? 'Buscar en favoritos...' : 'Buscar recetas en línea...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
@@ -152,14 +152,14 @@ export default function RecipesPage() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {activeTab === 'manual'
               ? 'Aún no hay recetas'
               : activeTab === 'favorites'
                 ? 'Sin favoritos'
                 : 'No se encontraron recetas'}
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {activeTab === 'manual'
               ? '¡Crea tu primera receta para comenzar!'
               : activeTab === 'favorites'

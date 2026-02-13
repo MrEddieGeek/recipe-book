@@ -50,7 +50,7 @@ export default function FavoriteButton({
       onClick={toggle}
       disabled={busy}
       aria-label={isFavorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-      className="p-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm transition-colors disabled:opacity-50"
+      className="p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 shadow-sm transition-colors disabled:opacity-50"
     >
       <svg
         className={`${sizeClasses} transition-colors ${

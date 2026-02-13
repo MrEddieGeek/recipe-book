@@ -78,7 +78,7 @@ export default function DeleteRecipeButton({
           </>
         }
       >
-        <p className="text-gray-700">
+        <p className="text-gray-700 dark:text-gray-300">
           ¿Estás seguro de que quieres eliminar <strong>{recipeTitle}</strong>? Esta
           acción no se puede deshacer.
         </p>

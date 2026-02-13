@@ -17,7 +17,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     <Link href={`/recipes/${recipe.id}`}>
       <Card variant="hover" padding="none">
         {/* Image */}
-        <div className="relative w-full h-48 bg-gray-200">
+        <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700">
           {recipe.imageUrl ? (
             <Image
               src={recipe.imageUrl}
@@ -65,18 +65,18 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
             {recipe.title}
           </h3>
 
           {recipe.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
               {recipe.description}
             </p>
           )}
 
           {/* Meta Info */}
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             {totalTime > 0 && (
               <div className="flex items-center gap-1">
                 <svg
@@ -122,7 +122,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
               {recipe.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
+                  className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
                 >
                   {tag}
                 </span>
