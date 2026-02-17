@@ -61,11 +61,6 @@ export const AiRecipeResponseSchema = z.object({
   fatGrams: z.number().optional(),
 });
 
-// Video extraction schema
-export const VideoExtractionSchema = z.object({
-  url: z.string().url().max(2000),
-});
-
 // Meal plan schemas
 export const MealPlanCreateSchema = z.object({
   recipeId: z.string().min(1).max(500),

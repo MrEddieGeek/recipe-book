@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import OpenAI from 'openai';
 import { Recipe } from '@/lib/adapters/types';
 import { AiRecipeResponseSchema } from '@/lib/utils/validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/utils/rate-limit';
@@ -10,7 +11,7 @@ const RequestSchema = z.object({
 
 const IMPORT_PROMPT = `Eres un chef profesional. Analiza el contenido de esta página web de receta y extrae la receta completa.
 
-DEBES responder SOLO con un objeto JSON válido (sin markdown, sin explicación, sin bloques de código) siguiendo esta estructura exacta:
+DEBES responder SOLO con un objeto JSON válido siguiendo esta estructura exacta:
 
 {
   "title": "Título de la Receta",
@@ -37,10 +38,10 @@ export async function POST(request: NextRequest) {
   const rl = checkRateLimit('import-recipe', RATE_LIMITS.GENERATE_RECIPE);
   if (rl) return rl;
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     return Response.json(
-      { error: 'AI no configurada. Agrega GEMINI_API_KEY.' },
+      { error: 'AI no configurada. Agrega OPENAI_API_KEY.' },
       { status: 503 }
     );
   }
@@ -94,53 +95,26 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'La página no parece contener una receta.' }, { status: 422 });
     }
 
-    // Send to Gemini
-    const geminiController = new AbortController();
-    const geminiTimeout = setTimeout(() => geminiController.abort(), 30_000);
+    const openai = new OpenAI({ apiKey });
 
-    let response: globalThis.Response;
-    try {
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: geminiController.signal,
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: IMPORT_PROMPT }] },
-            contents: [{ parts: [{ text: `URL: ${body.url}\n\nContenido de la página:\n${cleaned}` }] }],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 2048,
-              responseMimeType: 'application/json',
-            },
-          }),
-        }
-      );
-    } catch (err) {
-      clearTimeout(geminiTimeout);
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        return Response.json({ error: 'La extracción tardó demasiado.' }, { status: 504 });
-      }
-      throw err;
-    } finally {
-      clearTimeout(geminiTimeout);
-    }
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.3,
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: IMPORT_PROMPT },
+        { role: 'user', content: `URL: ${body.url}\n\nContenido de la página:\n${cleaned}` },
+      ],
+    });
 
-    if (!response.ok) {
-      console.error('Gemini API error:', response.status, await response.text());
-      return Response.json({ error: 'Error al procesar la receta.' }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = completion.choices[0]?.message?.content;
 
     if (!text) {
       return Response.json({ error: 'No se pudo extraer una receta.' }, { status: 502 });
     }
 
-    const jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const rawData = JSON.parse(jsonStr);
+    const rawData = JSON.parse(text);
     const recipeData = AiRecipeResponseSchema.parse(rawData);
 
     const recipe: Recipe = {

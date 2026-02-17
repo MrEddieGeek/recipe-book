@@ -46,10 +46,10 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' *.supabase.co www.themealdb.com data: blob:",
-              "connect-src 'self' generativelanguage.googleapis.com www.themealdb.com *.supabase.co vitals.vercel-insights.com",
+              "connect-src 'self' api.openai.com www.themealdb.com *.supabase.co vitals.vercel-insights.com https://va.vercel-scripts.com",
               "font-src 'self'",
               "frame-ancestors 'none'",
             ].join('; '),

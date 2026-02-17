@@ -1,9 +1,9 @@
 // Server-side API route for AI recipe generation
-// Uses Google Gemini API
-// Keeps GEMINI_API_KEY secret (never sent to the browser)
+// Uses OpenAI API (gpt-4o-mini)
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import OpenAI from 'openai';
 import { Recipe } from '@/lib/adapters/types';
 import { AiRecipeResponseSchema } from '@/lib/utils/validation';
 import { checkRateLimit, checkBodySize, RATE_LIMITS } from '@/lib/utils/rate-limit';
@@ -14,7 +14,7 @@ const RequestSchema = z.object({
 
 const SYSTEM_PROMPT = `Eres un chef profesional y escritor de recetas. Genera una receta basada en la solicitud del usuario.
 
-DEBES responder SOLO con un objeto JSON válido (sin markdown, sin explicación, sin bloques de código) siguiendo esta estructura exacta:
+DEBES responder SOLO con un objeto JSON válido siguiendo esta estructura exacta:
 
 {
   "title": "Título de la Receta",
@@ -50,10 +50,10 @@ export async function POST(request: NextRequest) {
   const bs = checkBodySize(request.headers.get('content-length'));
   if (bs) return bs;
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     return Response.json(
-      { error: 'AI recipe generation is not configured. Add GEMINI_API_KEY to your environment variables.' },
+      { error: 'AI recipe generation is not configured. Add OPENAI_API_KEY to your environment variables.' },
       { status: 503 }
     );
   }
@@ -66,62 +66,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
+    const openai = new OpenAI({ apiKey });
 
-    let response: globalThis.Response;
-    try {
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: [{ parts: [{ text: body.prompt }] }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 2048,
-              responseMimeType: 'application/json',
-            },
-          }),
-        }
-      );
-    } catch (err) {
-      clearTimeout(timeout);
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        return Response.json({ error: 'La generación tardó demasiado. Intenta de nuevo.' }, { status: 504 });
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeout);
-    }
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.7,
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: body.prompt },
+      ],
+    });
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      console.error('Gemini API error:', response.status, errBody);
-      return Response.json(
-        { error: 'Failed to generate recipe. Please try again.' },
-        { status: 502 }
-      );
-    }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = completion.choices[0]?.message?.content;
 
     if (!text) {
       return Response.json({ error: 'Empty response from AI.' }, { status: 502 });
     }
 
-    // Strip markdown code fences if present
-    const jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-
-    // Parse and validate the JSON from the response
-    const rawData = JSON.parse(jsonStr);
+    const rawData = JSON.parse(text);
     const recipeData = AiRecipeResponseSchema.parse(rawData);
 
-    // Build a proper Recipe object
     const recipe: Recipe = {
       id: `ai-${Date.now()}`,
       title: recipeData.title,
@@ -139,7 +105,7 @@ export async function POST(request: NextRequest) {
       source: {
         type: 'ai',
         id: `ai-${Date.now()}`,
-        name: 'Gemini AI',
+        name: 'OpenAI',
       },
     };
 

@@ -134,6 +134,6 @@ function getSourceName(sourceType: 'manual' | 'api' | 'ai'): string {
     case 'api':
       return 'TheMealDB';
     case 'ai':
-      return 'Gemini AI';
+      return 'OpenAI';
   }
 }
