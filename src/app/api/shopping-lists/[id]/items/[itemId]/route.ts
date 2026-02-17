@@ -14,8 +14,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   const { itemId } = await params;
   try {
-    const { checked } = await request.json();
-    await ShoppingListService.toggleItem(itemId, checked);
+    const body = await request.json();
+    if ('checked' in body) {
+      await ShoppingListService.toggleItem(itemId, body.checked);
+    }
+    if ('price' in body) {
+      await ShoppingListService.updateItemPrice(itemId, body.price);
+    }
     return Response.json({ ok: true });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Error al actualizar';

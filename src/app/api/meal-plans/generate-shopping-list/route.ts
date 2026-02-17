@@ -3,6 +3,7 @@ import { MealPlanService } from '@/lib/services/meal-plan-service';
 import { ShoppingListService } from '@/lib/services/shopping-list-service';
 import { GenerateShoppingListSchema } from '@/lib/utils/validation';
 import { checkRateLimit, checkBodySize } from '@/lib/utils/rate-limit';
+import { consolidateIngredients } from '@/lib/utils/ingredient-consolidation';
 
 export async function POST(request: NextRequest) {
   const rl = checkRateLimit('meal-plan-generate-list');
@@ -23,10 +24,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'No hay comidas planificadas esta semana' }, { status: 400 });
     }
 
-    const list = await ShoppingListService.createList(validated.listName);
-
-    await ShoppingListService.addIngredientsFromRecipe(
-      list.id,
+    const consolidated = consolidateIngredients(
       ingredients.map((ing) => ({
         item: ing.item,
         amount: ing.amount,
@@ -34,7 +32,18 @@ export async function POST(request: NextRequest) {
       }))
     );
 
-    return Response.json({ listId: list.id, itemCount: ingredients.length });
+    const list = await ShoppingListService.createList(validated.listName);
+
+    await ShoppingListService.addIngredientsFromRecipe(
+      list.id,
+      consolidated.map((ing) => ({
+        item: ing.item,
+        amount: ing.amount,
+        unit: ing.unit,
+      }))
+    );
+
+    return Response.json({ listId: list.id, itemCount: consolidated.length });
   } catch (error) {
     if (error && typeof error === 'object' && 'issues' in error) {
       return Response.json({ error: 'Datos incompletos o inválidos' }, { status: 400 });

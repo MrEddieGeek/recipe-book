@@ -10,6 +10,7 @@ function getSupabase() {
 export interface ShoppingList {
   id: string;
   name: string;
+  share_token: string | null;
   created_at: string;
   items?: ShoppingListItem[];
 }
@@ -22,6 +23,8 @@ export interface ShoppingListItem {
   unit: string | null;
   checked: boolean;
   recipe_id: string | null;
+  sort_order: number;
+  price: number | null;
   created_at: string;
 }
 
@@ -56,6 +59,7 @@ export class ShoppingListService {
       .from('shopping_list_items')
       .select('*')
       .eq('shopping_list_id', id)
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true });
 
     return { ...list, items: items || [] };
@@ -180,5 +184,71 @@ export class ShoppingListService {
     if (error) {
       throw new Error(`Error al limpiar artículos: ${error.message}`);
     }
+  }
+
+  /** Reorder items by setting sort_order based on array position */
+  static async reorderItems(listId: string, itemIds: string[]): Promise<void> {
+    const supabase = getSupabase();
+    for (let i = 0; i < itemIds.length; i++) {
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .update({ sort_order: i })
+        .eq('id', itemIds[i])
+        .eq('shopping_list_id', listId);
+
+      if (error) {
+        throw new Error(`Error al reordenar: ${error.message}`);
+      }
+    }
+  }
+
+  /** Update item price */
+  static async updateItemPrice(itemId: string, price: number | null): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase
+      .from('shopping_list_items')
+      .update({ price })
+      .eq('id', itemId);
+
+    if (error) {
+      throw new Error(`Error al actualizar precio: ${error.message}`);
+    }
+  }
+
+  /** Generate a share token for a list */
+  static async generateShareToken(listId: string): Promise<string> {
+    const supabase = getSupabase();
+    const token = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+
+    const { error } = await supabase
+      .from('shopping_lists')
+      .update({ share_token: token })
+      .eq('id', listId);
+
+    if (error) {
+      throw new Error(`Error al generar enlace: ${error.message}`);
+    }
+    return token;
+  }
+
+  /** Get a shopping list by share token (public access) */
+  static async getListByToken(token: string): Promise<ShoppingList | null> {
+    const supabase = getSupabase();
+    const { data: list, error } = await supabase
+      .from('shopping_lists')
+      .select('*')
+      .eq('share_token', token)
+      .single();
+
+    if (error || !list) return null;
+
+    const { data: items } = await supabase
+      .from('shopping_list_items')
+      .select('*')
+      .eq('shopping_list_id', list.id)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    return { ...list, items: items || [] };
   }
 }

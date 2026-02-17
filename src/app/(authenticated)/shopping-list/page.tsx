@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { ShoppingList, ShoppingListItem } from '@/lib/services/shopping-list-service';
@@ -13,6 +13,12 @@ export default function ShoppingListPage() {
   const [creatingList, setCreatingList] = useState(false);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newItemText, setNewItemText] = useState('');
+  const [shareUrl, setShareUrl] = useState('');
+  const [sharing, setSharing] = useState(false);
+
+  // Drag state
+  const dragItemRef = useRef<string | null>(null);
+  const dragOverItemRef = useRef<string | null>(null);
 
   const fetchLists = useCallback(async () => {
     const res = await fetch('/api/shopping-lists');
@@ -25,6 +31,7 @@ export default function ShoppingListPage() {
     if (res.ok) {
       const data = await res.json();
       setActiveList(data);
+      setShareUrl('');
     }
   }, []);
 
@@ -64,7 +71,6 @@ export default function ShoppingListPage() {
 
   const handleToggleItem = async (itemId: string, checked: boolean) => {
     if (!activeList) return;
-    // Optimistic update
     setActiveList({
       ...activeList,
       items: activeList.items.map((item) =>
@@ -118,6 +124,83 @@ export default function ShoppingListPage() {
     });
   };
 
+  // Drag-drop handlers
+  const handleDragStart = (itemId: string) => {
+    dragItemRef.current = itemId;
+  };
+
+  const handleDragOver = (e: React.DragEvent, itemId: string) => {
+    e.preventDefault();
+    dragOverItemRef.current = itemId;
+  };
+
+  const handleDrop = async () => {
+    if (!activeList || !dragItemRef.current || !dragOverItemRef.current) return;
+    if (dragItemRef.current === dragOverItemRef.current) return;
+
+    const items = [...activeList.items];
+    const dragIdx = items.findIndex((i) => i.id === dragItemRef.current);
+    const dropIdx = items.findIndex((i) => i.id === dragOverItemRef.current);
+
+    if (dragIdx === -1 || dropIdx === -1) return;
+
+    const [removed] = items.splice(dragIdx, 1);
+    items.splice(dropIdx, 0, removed);
+
+    setActiveList({ ...activeList, items });
+
+    // Save order
+    const uncheckedIds = items.filter((i) => !i.checked).map((i) => i.id);
+    await fetch(`/api/shopping-lists/${activeList.id}/items/reorder`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemIds: uncheckedIds }),
+    });
+
+    dragItemRef.current = null;
+    dragOverItemRef.current = null;
+  };
+
+  // Price handler
+  const handlePriceChange = async (itemId: string, priceStr: string) => {
+    if (!activeList) return;
+    const price = priceStr ? parseFloat(priceStr) : null;
+
+    setActiveList({
+      ...activeList,
+      items: activeList.items.map((item) =>
+        item.id === itemId ? { ...item, price } : item
+      ),
+    });
+
+    await fetch(`/api/shopping-lists/${activeList.id}/items/${itemId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price }),
+    });
+  };
+
+  // Share handler
+  const handleShare = async () => {
+    if (!activeList) return;
+    setSharing(true);
+    try {
+      const res = await fetch(`/api/shopping-lists/${activeList.id}/share`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const { token } = await res.json();
+        const url = `${window.location.origin}/shared/shopping-list/${token}`;
+        setShareUrl(url);
+        await navigator.clipboard.writeText(url).catch(() => {});
+      }
+    } catch {
+      alert('Error al compartir');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -130,6 +213,7 @@ export default function ShoppingListPage() {
   if (activeList) {
     const unchecked = activeList.items.filter((i) => !i.checked);
     const checked = activeList.items.filter((i) => i.checked);
+    const total = activeList.items.reduce((sum, i) => sum + (i.price || 0), 0);
 
     return (
       <div className="max-w-2xl mx-auto">
@@ -144,12 +228,27 @@ export default function ShoppingListPage() {
             </svg>
             Volver
           </button>
-          {checked.length > 0 && (
-            <Button variant="secondary" size="sm" onClick={handleClearChecked}>
-              Limpiar marcados ({checked.length})
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handleShare} disabled={sharing}>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              {sharing ? 'Compartiendo...' : 'Compartir'}
             </Button>
-          )}
+            {checked.length > 0 && (
+              <Button variant="secondary" size="sm" onClick={handleClearChecked}>
+                Limpiar marcados ({checked.length})
+              </Button>
+            )}
+          </div>
         </div>
+
+        {shareUrl && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+            <p className="text-sm text-green-700 dark:text-green-300 mb-1">Enlace copiado al portapapeles:</p>
+            <p className="text-xs text-green-600 dark:text-green-400 break-all">{shareUrl}</p>
+          </div>
+        )}
 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{activeList.name}</h1>
 
@@ -175,12 +274,22 @@ export default function ShoppingListPage() {
           </div>
         ) : (
           <div className="space-y-1">
-            {/* Unchecked items */}
+            {/* Unchecked items (draggable) */}
             {unchecked.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 group"
+                draggable
+                onDragStart={() => handleDragStart(item.id)}
+                onDragOver={(e) => handleDragOver(e, item.id)}
+                onDrop={handleDrop}
+                className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 group cursor-grab active:cursor-grabbing"
               >
+                {/* Drag handle */}
+                <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" />
+                </svg>
                 <input
                   type="checkbox"
                   checked={false}
@@ -194,6 +303,20 @@ export default function ShoppingListPage() {
                       {item.amount} {item.unit}
                     </span>
                   )}
+                </div>
+                {/* Price input */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-400">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={item.price ?? ''}
+                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                    className="w-20 px-2 py-1 text-sm text-right border border-gray-200 dark:border-gray-600 rounded bg-transparent dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                    style={item.price ? { opacity: 1 } : undefined}
+                  />
                 </div>
                 <button
                   onClick={() => handleDeleteItem(item.id)}
@@ -219,6 +342,7 @@ export default function ShoppingListPage() {
                     key={item.id}
                     className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg group"
                   >
+                    <div className="w-4" /> {/* spacer for drag handle alignment */}
                     <input
                       type="checkbox"
                       checked={true}
@@ -233,6 +357,9 @@ export default function ShoppingListPage() {
                         </span>
                       )}
                     </div>
+                    {item.price != null && (
+                      <span className="text-sm text-gray-400">${item.price.toFixed(2)}</span>
+                    )}
                     <button
                       onClick={() => handleDeleteItem(item.id)}
                       className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -244,6 +371,16 @@ export default function ShoppingListPage() {
                   </div>
                 ))}
               </>
+            )}
+
+            {/* Total */}
+            {total > 0 && (
+              <div className="pt-4 mt-4 border-t dark:border-gray-700 flex justify-between items-center">
+                <span className="font-medium text-gray-700 dark:text-gray-300">Total</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  ${total.toFixed(2)} MXN
+                </span>
+              </div>
             )}
           </div>
         )}
