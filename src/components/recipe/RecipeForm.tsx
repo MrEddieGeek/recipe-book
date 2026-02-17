@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Input from '@/components/ui/Input';
@@ -8,6 +8,13 @@ import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
 import { Recipe, Ingredient, Instruction } from '@/lib/adapters/types';
 import { RecipeFormSchema, RecipeFormData } from '@/lib/utils/validation';
+import { compressImage } from '@/lib/utils/image-compress';
+
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -24,6 +31,15 @@ export default function RecipeForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryId, setCategoryId] = useState(recipe?.categoryId || '');
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setCategories(data); })
+      .catch(() => {});
+  }, []);
 
   // Form state
   const [title, setTitle] = useState(recipe?.title || '');
@@ -45,6 +61,10 @@ export default function RecipeForm({
     recipe?.instructions || [{ step: 1, description: '' }]
   );
   const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
+  const [caloriesPerServing, setCaloriesPerServing] = useState(recipe?.caloriesPerServing || 0);
+  const [proteinGrams, setProteinGrams] = useState(recipe?.proteinGrams || 0);
+  const [carbsGrams, setCarbsGrams] = useState(recipe?.carbsGrams || 0);
+  const [fatGrams, setFatGrams] = useState(recipe?.fatGrams || 0);
 
   // Image upload handler
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,12 +86,13 @@ export default function RecipeForm({
     reader.onload = (ev) => setImagePreview(ev.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Upload to API
+    // Compress and upload to API
     setUploadingImage(true);
     setError('');
     try {
+      const compressed = await compressImage(file);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
 
       const res = await fetch('/api/upload-image', {
         method: 'POST',
@@ -159,6 +180,11 @@ export default function RecipeForm({
         ingredients,
         instructions,
         tags: parsedTags,
+        categoryId: categoryId || undefined,
+        caloriesPerServing: caloriesPerServing || undefined,
+        proteinGrams: proteinGrams || undefined,
+        carbsGrams: carbsGrams || undefined,
+        fatGrams: fatGrams || undefined,
       };
 
       const validated = RecipeFormSchema.parse(formData);
@@ -295,6 +321,66 @@ export default function RecipeForm({
           placeholder="ej., Italiana, Pasta, Rápida"
           helperText="Separa las etiquetas con comas"
         />
+
+        {categories.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Categoría
+            </label>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Sin categoría</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Nutrition (optional) */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Nutrición (opcional)</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Input
+            label="Calorías/porción"
+            type="number"
+            value={caloriesPerServing || ''}
+            onChange={(e) => setCaloriesPerServing(Number(e.target.value))}
+            min="0"
+            placeholder="0"
+          />
+          <Input
+            label="Proteína (g)"
+            type="number"
+            value={proteinGrams || ''}
+            onChange={(e) => setProteinGrams(Number(e.target.value))}
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+          <Input
+            label="Carbohidratos (g)"
+            type="number"
+            value={carbsGrams || ''}
+            onChange={(e) => setCarbsGrams(Number(e.target.value))}
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+          <Input
+            label="Grasas (g)"
+            type="number"
+            value={fatGrams || ''}
+            onChange={(e) => setFatGrams(Number(e.target.value))}
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+        </div>
       </div>
 
       {/* Ingredients */}

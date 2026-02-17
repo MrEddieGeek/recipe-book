@@ -33,3 +33,38 @@ button, a, input, textarea, select {
 input, textarea, select {
   font-size: 16px; /* Prevents iOS zoom */
 }
+
+/* Print styles */
+@media print {
+  nav, header, footer, button, .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  .print-recipe {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .print-recipe h1 {
+    font-size: 24pt;
+  }
+
+  .print-recipe h2 {
+    font-size: 16pt;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: black !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

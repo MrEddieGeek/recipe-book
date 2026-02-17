@@ -118,6 +118,38 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
         )}
       </div>
 
+      {/* Nutrition Info */}
+      {(recipe.caloriesPerServing || recipe.proteinGrams || recipe.carbsGrams || recipe.fatGrams) && (
+        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <span className="text-sm font-medium text-green-800 dark:text-green-300">Nutrición por porción:</span>
+          {recipe.caloriesPerServing && (
+            <span className="text-sm text-green-700 dark:text-green-400">{recipe.caloriesPerServing} kcal</span>
+          )}
+          {recipe.proteinGrams && (
+            <span className="text-sm text-green-700 dark:text-green-400">Proteína: {recipe.proteinGrams}g</span>
+          )}
+          {recipe.carbsGrams && (
+            <span className="text-sm text-green-700 dark:text-green-400">Carbs: {recipe.carbsGrams}g</span>
+          )}
+          {recipe.fatGrams && (
+            <span className="text-sm text-green-700 dark:text-green-400">Grasa: {recipe.fatGrams}g</span>
+          )}
+        </div>
+      )}
+
+      {/* Print Button */}
+      <div className="flex justify-end mb-4 no-print">
+        <button
+          onClick={() => window.open(`/recipes/${recipe.id}/print`, '_blank')}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Imprimir
+        </button>
+      </div>
+
       {/* Content */}
       <div className="grid md:grid-cols-2 gap-8">
         <IngredientList ingredients={recipe.ingredients} />

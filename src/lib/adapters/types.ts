@@ -11,6 +11,11 @@ export interface Recipe {
   ingredients: Ingredient[];
   instructions: Instruction[];
   tags: string[];
+  categoryId?: string;
+  caloriesPerServing?: number;
+  proteinGrams?: number;
+  carbsGrams?: number;
+  fatGrams?: number;
   source: RecipeSource;
   isFavorited?: boolean;
   createdAt?: Date;
@@ -53,6 +58,11 @@ export interface DatabaseRecipe {
   servings: number | null;
   source_type: 'manual' | 'api' | 'ai';
   source_id: string | null;
+  category_id: string | null;
+  calories_per_serving: number | null;
+  protein_grams: number | null;
+  carbs_grams: number | null;
+  fat_grams: number | null;
   ingredients: Ingredient[];
   instructions: Instruction[];
   tags: string[];
@@ -74,6 +84,11 @@ export function databaseRecipeToRecipe(dbRecipe: DatabaseRecipe): Recipe {
     ingredients: dbRecipe.ingredients || [],
     instructions: dbRecipe.instructions || [],
     tags: dbRecipe.tags || [],
+    categoryId: dbRecipe.category_id || undefined,
+    caloriesPerServing: dbRecipe.calories_per_serving || undefined,
+    proteinGrams: dbRecipe.protein_grams || undefined,
+    carbsGrams: dbRecipe.carbs_grams || undefined,
+    fatGrams: dbRecipe.fat_grams || undefined,
     source: {
       type: dbRecipe.source_type,
       id: dbRecipe.source_id || dbRecipe.id,
@@ -100,6 +115,11 @@ export function recipeToDatabaseRecipe(
     servings: recipe.servings || null,
     source_type: sourceType,
     source_id: null,
+    category_id: (recipe as any).categoryId || null,
+    calories_per_serving: (recipe as any).caloriesPerServing || null,
+    protein_grams: (recipe as any).proteinGrams || null,
+    carbs_grams: (recipe as any).carbsGrams || null,
+    fat_grams: (recipe as any).fatGrams || null,
     ingredients: recipe.ingredients,
     instructions: recipe.instructions,
     tags: recipe.tags,

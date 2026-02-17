@@ -107,6 +107,11 @@ export class ManualRecipeAdapter extends RecipeAdapter {
     if (recipe.ingredients !== undefined) updateData.ingredients = recipe.ingredients;
     if (recipe.instructions !== undefined) updateData.instructions = recipe.instructions;
     if (recipe.tags !== undefined) updateData.tags = recipe.tags;
+    if ('categoryId' in recipe) updateData.category_id = (recipe as Recipe).categoryId || null;
+    if ('caloriesPerServing' in recipe) updateData.calories_per_serving = (recipe as Recipe).caloriesPerServing || null;
+    if ('proteinGrams' in recipe) updateData.protein_grams = (recipe as Recipe).proteinGrams || null;
+    if ('carbsGrams' in recipe) updateData.carbs_grams = (recipe as Recipe).carbsGrams || null;
+    if ('fatGrams' in recipe) updateData.fat_grams = (recipe as Recipe).fatGrams || null;
 
     const { data, error } = await supabase
       .from('recipes')
