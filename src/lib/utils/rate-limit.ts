@@ -9,6 +9,7 @@ interface RateLimitConfig {
 
 export const RATE_LIMITS = {
   GENERATE_RECIPE: { windowMs: 60_000, maxHits: 3 },
+  EXTRACT_VIDEO: { windowMs: 60_000, maxHits: 2 },
   UPLOAD_IMAGE: { windowMs: 60_000, maxHits: 10 },
   DEFAULT: { windowMs: 60_000, maxHits: 30 },
 } as const;

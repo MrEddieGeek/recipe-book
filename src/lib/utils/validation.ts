@@ -29,6 +29,11 @@ export const RecipeFormSchema = z.object({
     .min(1, 'At least one instruction is required')
     .max(100),
   tags: z.array(z.string().max(50)).max(30),
+  categoryId: z.string().uuid().optional().or(z.literal('')),
+  caloriesPerServing: z.number().int().min(0).max(50000).optional(),
+  proteinGrams: z.number().min(0).max(5000).optional(),
+  carbsGrams: z.number().min(0).max(5000).optional(),
+  fatGrams: z.number().min(0).max(5000).optional(),
 });
 
 export type RecipeFormData = z.infer<typeof RecipeFormSchema>;
@@ -50,6 +55,15 @@ export const AiRecipeResponseSchema = z.object({
     description: z.string(),
   })).default([]),
   tags: z.array(z.string()).default([]),
+  caloriesPerServing: z.number().optional(),
+  proteinGrams: z.number().optional(),
+  carbsGrams: z.number().optional(),
+  fatGrams: z.number().optional(),
+});
+
+// Video extraction schema
+export const VideoExtractionSchema = z.object({
+  url: z.string().url().max(2000),
 });
 
 // Meal plan schemas

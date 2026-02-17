@@ -28,7 +28,11 @@ DEBES responder SOLO con un objeto JSON válido (sin markdown, sin explicación,
   "instructions": [
     {"step": 1, "description": "Instrucción clara para este paso."}
   ],
-  "tags": ["etiqueta1", "etiqueta2"]
+  "tags": ["etiqueta1", "etiqueta2"],
+  "caloriesPerServing": 350,
+  "proteinGrams": 25,
+  "carbsGrams": 40,
+  "fatGrams": 12
 }
 
 Reglas:
@@ -37,6 +41,7 @@ Reglas:
 - Incluir 5-15 ingredientes y 4-10 pasos de instrucciones.
 - Las etiquetas deben incluir tipo de cocina, tipo de comida, información dietética e ingredientes clave.
 - TODO el contenido debe estar en ESPAÑOL.
+- Incluye una estimación nutricional por porción (calorías, proteína, carbohidratos, grasa).
 - Responde SOLO con el objeto JSON, nada más.`;
 
 export async function POST(request: NextRequest) {
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
     let response: globalThis.Response;
     try {
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -127,6 +132,10 @@ export async function POST(request: NextRequest) {
       ingredients: recipeData.ingredients,
       instructions: recipeData.instructions,
       tags: recipeData.tags,
+      caloriesPerServing: recipeData.caloriesPerServing,
+      proteinGrams: recipeData.proteinGrams,
+      carbsGrams: recipeData.carbsGrams,
+      fatGrams: recipeData.fatGrams,
       source: {
         type: 'ai',
         id: `ai-${Date.now()}`,

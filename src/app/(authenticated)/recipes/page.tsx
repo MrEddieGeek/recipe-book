@@ -9,12 +9,27 @@ import { Recipe } from '@/lib/adapters/types';
 
 type SourceTab = 'manual' | 'favorites' | 'discover';
 
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export default function RecipesPage() {
   const [activeTab, setActiveTab] = useState<SourceTab>('manual');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setCategories(data); })
+      .catch(() => {});
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -50,6 +65,23 @@ export default function RecipesPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Recetas</h1>
         <div className="flex gap-2">
+          <Link href="/recipes/import">
+            <Button variant="secondary" size="sm">
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Importar
+            </Button>
+          </Link>
+          <Link href="/recipes/from-video">
+            <Button variant="secondary" size="sm">
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Video
+            </Button>
+          </Link>
           <Link href="/recipes/generate">
             <Button variant="secondary" size="sm">
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,12 +162,42 @@ export default function RecipesPage() {
         />
       </div>
 
+      {/* Category Filter Chips */}
+      {activeTab === 'manual' && categories.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button
+            onClick={() => setSelectedCategory('')}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === ''
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            Todas
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(selectedCategory === cat.id ? '' : cat.id)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === cat.id
+                  ? 'text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              style={selectedCategory === cat.id ? { backgroundColor: cat.color } : undefined}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Content */}
       {loading ? (
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
         </div>
-      ) : recipes.length === 0 ? (
+      ) : recipes.filter((r) => !selectedCategory || r.categoryId === selectedCategory).length === 0 ? (
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
             <svg
@@ -176,9 +238,11 @@ export default function RecipesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
+          {recipes
+            .filter((r) => !selectedCategory || r.categoryId === selectedCategory)
+            .map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
         </div>
       )}
     </div>
