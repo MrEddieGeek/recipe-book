@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
+import MonthlyCalendar from '@/components/meal-plan/MonthlyCalendar';
+import TemplateManager from '@/components/meal-plan/TemplateManager';
 
 interface MealRecipe {
   id: string;
@@ -56,8 +58,12 @@ function addDays(date: Date, days: number): Date {
 const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const DAY_NAMES_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+type ViewMode = 'weekly' | 'monthly';
+
 export default function MealPlanPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>('weekly');
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
+  const [monthDate, setMonthDate] = useState(() => new Date());
   const [meals, setMeals] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,18 +80,29 @@ export default function MealPlanPage() {
   const [generatingList, setGeneratingList] = useState(false);
   const [listSuccess, setListSuccess] = useState('');
 
+  // Templates
+  const [showTemplates, setShowTemplates] = useState(false);
+
   const weekEnd = addDays(weekStart, 6);
 
   const fetchMeals = useCallback(async () => {
     setLoading(true);
-    const start = formatDate(weekStart);
-    const end = formatDate(addDays(weekStart, 6));
+    let start: string, end: string;
+    if (viewMode === 'monthly') {
+      const first = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+      const last = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+      start = formatDate(first);
+      end = formatDate(last);
+    } else {
+      start = formatDate(weekStart);
+      end = formatDate(addDays(weekStart, 6));
+    }
     const res = await fetch(`/api/meal-plans?startDate=${start}&endDate=${end}`);
     if (res.ok) {
       setMeals(await res.json());
     }
     setLoading(false);
-  }, [weekStart]);
+  }, [weekStart, viewMode, monthDate]);
 
   useEffect(() => {
     fetchMeals();
@@ -192,6 +209,39 @@ export default function MealPlanPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Planificación de Comidas</h1>
         <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('weekly')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                viewMode === 'weekly'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              Semana
+            </button>
+            <button
+              onClick={() => setViewMode('monthly')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                viewMode === 'monthly'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              Mes
+            </button>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowTemplates(true)}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            </svg>
+            Plantillas
+          </Button>
           {totalMeals > 0 && (
             <Button
               variant="secondary"
@@ -217,30 +267,70 @@ export default function MealPlanPage() {
         </div>
       )}
 
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <button onClick={prevWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div className="text-center">
-          <p className="font-semibold text-gray-900 dark:text-gray-100">{weekLabel}</p>
-          <button onClick={goToday} className="text-xs text-blue-600 hover:text-blue-800">
-            Ir a hoy
+      {/* Navigation */}
+      {viewMode === 'weekly' ? (
+        <div className="flex items-center justify-between mb-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <button onClick={prevWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="text-center">
+            <p className="font-semibold text-gray-900 dark:text-gray-100">{weekLabel}</p>
+            <button onClick={goToday} className="text-xs text-blue-600 hover:text-blue-800">
+              Ir a hoy
+            </button>
+          </div>
+          <button onClick={nextWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
-        <button onClick={nextWeek} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between mb-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <button
+            onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="text-center">
+            <p className="font-semibold text-gray-900 dark:text-gray-100 capitalize">
+              {monthDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+            </p>
+            <button
+              onClick={() => setMonthDate(new Date())}
+              className="text-xs text-blue-600 hover:text-blue-800"
+            >
+              Mes actual
+            </button>
+          </div>
+          <button
+            onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
         </div>
+      ) : viewMode === 'monthly' ? (
+        <MonthlyCalendar
+          year={monthDate.getFullYear()}
+          month={monthDate.getMonth()}
+          meals={meals}
+          onRemoveMeal={handleRemoveMeal}
+          onAddMeal={(date, mealType) => openPicker(date, mealType)}
+        />
       ) : (
         <>
           {/* Desktop Grid (hidden on mobile) */}
@@ -402,6 +492,24 @@ export default function MealPlanPage() {
             })}
           </div>
         </>
+      )}
+
+      {/* Template Manager Modal */}
+      {showTemplates && (
+        <TemplateManager
+          weekStartDate={formatDate(weekStart)}
+          meals={meals.map((m) => ({
+            recipe_id: m.recipe_id,
+            date: m.date,
+            meal_type: m.meal_type,
+            servings: m.servings,
+          }))}
+          onApplied={() => {
+            setShowTemplates(false);
+            fetchMeals();
+          }}
+          onClose={() => setShowTemplates(false)}
+        />
       )}
 
       {/* Recipe Picker Modal */}
