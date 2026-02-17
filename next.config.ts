@@ -4,6 +4,7 @@ import type { NextConfig } from 'next';
 const withSerwist = withSerwistInit({
   swSrc: 'src/app/sw.ts',
   swDest: 'public/sw.js',
+  disable: process.env.NODE_ENV === 'development',
 });
 
 const nextConfig: NextConfig = {
@@ -48,7 +49,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' *.supabase.co www.themealdb.com data: blob:",
-              "connect-src 'self' generativelanguage.googleapis.com www.themealdb.com *.supabase.co",
+              "connect-src 'self' generativelanguage.googleapis.com www.themealdb.com *.supabase.co vitals.vercel-insights.com",
               "font-src 'self'",
               "frame-ancestors 'none'",
             ].join('; '),

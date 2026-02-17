@@ -1,6 +1,6 @@
 # Recipe Book - Task Checklist
 
-**Last Updated: 2026-02-11**
+**Last Updated: 2026-02-16 (session 3)**
 
 ## Phase 1: MVP - Manual Recipes ✅ COMPLETE
 
@@ -25,385 +25,218 @@
 - [x] Update RLS policies for open access
 
 ### UI Components
-- [x] Button component
-- [x] Card component
-- [x] Input component
-- [x] Textarea component
-- [x] Modal component
-- [x] Spinner component
-- [x] Badge component
+- [x] Button, Card, Input, Textarea, Modal, Spinner, Badge components
 
 ### Recipe Features
 - [x] Recipe listing page
 - [x] Recipe detail page
-- [x] Recipe create form
-- [x] Recipe edit form
+- [x] Recipe create/edit forms
 - [x] Recipe delete function
-- [x] RecipeCard component
-- [x] RecipeForm component (complex)
-- [x] IngredientList component
-- [x] InstructionSteps component
+- [x] RecipeCard, RecipeForm, IngredientList, InstructionSteps components
 
-### Layout
-- [x] Header component
-- [x] Bottom navigation
-- [x] Mobile-responsive design
-- [x] Authenticated layout
-
-### Deployment
-- [x] Push to GitHub
-- [x] Deploy to Vercel
-- [x] Configure environment variables
-- [x] Test live deployment
+### Layout & Deployment
+- [x] Header, Bottom navigation, Mobile-responsive design
+- [x] Push to GitHub, Deploy to Vercel
 
 ---
 
-## Phase 2: Multi-Source Recipes 🎯 NEXT
+## Phase 2: Multi-Source Recipes ✅ COMPLETE
 
-### Section 1: TheMealDB API Integration
-
-#### Implementation
-- [ ] Study TheMealDB API documentation
-- [ ] Test API endpoints in browser/Postman
-- [ ] Implement `ApiRecipeAdapter.getRecipeById()`
-- [ ] Implement `ApiRecipeAdapter.searchRecipes()`
-- [ ] Create format transformation functions
-- [ ] Handle API errors and edge cases
-- [ ] Test adapter in isolation
-
-#### Caching
-- [ ] Add API recipe caching logic
-- [ ] Save fetched recipes to Supabase
-- [ ] Implement cache check before API call
-- [ ] Add cache expiration logic
-- [ ] Test cache hit/miss scenarios
-
-#### UI Updates
-- [ ] Add search bar to recipes page
-- [ ] Implement source type filter
-- [ ] Add category filter (from API)
-- [ ] Update RecipeCard for API recipes
-- [ ] Test multi-source display
-
-### Section 2: AI Recipe Generation
-
-#### Anthropic SDK Setup
-- [ ] Install `@anthropic-ai/sdk` package
-- [ ] Set up API key in environment
-- [ ] Create Anthropic client wrapper
-- [ ] Test basic API connection
-
-#### Adapter Implementation
-- [ ] Design recipe generation prompt template
-- [ ] Implement `AiRecipeAdapter.generateRecipe()`
-- [ ] Create Zod schema for AI response
-- [ ] Validate AI output format
-- [ ] Handle API errors and retries
-- [ ] Add token usage tracking
-- [ ] Test generation with various prompts
-
-#### Generation UI
-- [ ] Create `/recipes/generate` page
-- [ ] Build prompt input form
-- [ ] Add example prompts/templates
-- [ ] Show loading state with spinner
-- [ ] Display generated recipe preview
-- [ ] Add "Save" button
-- [ ] Add "Regenerate" button
-- [ ] Handle errors gracefully
-
-#### Storage
-- [ ] Save AI recipes to database
-- [ ] Link to generation prompt
-- [ ] Add metadata (tokens used, model, etc)
-- [ ] Test saving and retrieval
-
-### Section 3: Multi-Source Integration
-
-#### Service Updates
-- [ ] Update `RecipeService.searchAllSources()`
-- [ ] Implement parallel source querying
-- [ ] Add error handling per source
-- [ ] Aggregate results properly
-- [ ] Test with all sources enabled
-
-#### Factory Updates
-- [ ] Enable API adapter in factory
-- [ ] Enable AI adapter in factory
-- [ ] Update `getEnabledSources()`
-- [ ] Test factory returns all adapters
-
-#### UI Enhancement
-- [ ] Add source tabs to recipes page
-- [ ] Implement tab filtering
-- [ ] Add "All" / "My Recipes" / "Discover" / "AI" tabs
-- [ ] Maintain search state across tabs
-- [ ] Style active tab indicator
-
-#### Discovery Page (Optional)
-- [ ] Create `/recipes/discover` page
-- [ ] Show only API and AI recipes
-- [ ] Prominent search and filters
-- [ ] "Save to My Recipes" functionality
-- [ ] Test discovery flow
-
-### Testing & Polish
-- [ ] Test all adapters independently
-- [ ] Test multi-source search
-- [ ] Verify source badges display correctly
-- [ ] Check mobile responsiveness
-- [ ] Test on multiple browsers
-- [ ] Verify no performance degradation
-
-### Deployment
-- [ ] Update environment variables in Vercel
-- [ ] Add `ANTHROPIC_API_KEY`
-- [ ] Deploy Phase 2 changes
-- [ ] Test live deployment
-- [ ] Monitor API usage and costs
+- [x] Implement `ApiRecipeAdapter` (TheMealDB)
+- [x] AI Recipe Generation via Google Gemini
+- [x] Multi-source UI with tabs
+- [x] Photo upload from files
+- [x] Full Spanish translation
 
 ---
 
-## Phase 3: Shopping List Management 📋 PLANNED
+## Phase 3: Shopping List Management ✅ COMPLETE
 
-### Section 1: Data Layer
-
-#### Service Creation
-- [ ] Create `shopping-list-service.ts`
-- [ ] Implement CRUD operations
-- [ ] Create shopping list
-- [ ] Read shopping lists
-- [ ] Update shopping list
-- [ ] Delete shopping list
-- [ ] Test service functions
-
-#### Recipe Import Function
-- [ ] Extract ingredients from recipe
-- [ ] Map to shopping list items
-- [ ] Adjust quantities based on servings
-- [ ] Group by category (optional)
-- [ ] Test import logic
-
-#### Consolidation Algorithm
-- [ ] Detect duplicate ingredients
-- [ ] Sum quantities with unit conversion
-- [ ] Handle partial matches
-- [ ] Test consolidation edge cases
-
-### Section 2: UI Components
-
-#### List Management
-- [ ] Create shopping list page
-- [ ] List all shopping lists
-- [ ] "New List" button
-- [ ] Delete list with confirmation
-- [ ] Test list CRUD
-
-#### List Detail View
-- [ ] Show all items with checkboxes
-- [ ] Group items by category
-- [ ] Add manual item form
-- [ ] Delete individual items
-- [ ] Show recipe source per item
-- [ ] Test checking items on/off
-
-#### Recipe Integration
-- [ ] Add "Add to Shopping List" button to recipe page
-- [ ] Create list selection modal
-- [ ] Option to create new list
-- [ ] Confirm ingredient import
-- [ ] Test adding from recipe
-
-#### Mobile Optimization
-- [ ] Large checkboxes (easy to tap)
-- [ ] Swipe to delete (optional)
-- [ ] Bottom sheet for adding items
-- [ ] Test on mobile device
-
-### Testing & Polish
-- [ ] Test consolidation algorithm
-- [ ] Verify quantities sum correctly
-- [ ] Check mobile UX
-- [ ] Test edge cases (empty list, etc)
-
-### Deployment
-- [ ] Deploy Phase 3 changes
-- [ ] Test live deployment
-- [ ] Verify shopping list functionality
+- [x] Shopping list service with full CRUD
+- [x] 5 API route files
+- [x] Shopping list UI with checkboxes
+- [x] Recipe integration (AddToShoppingListButton)
 
 ---
 
-## Phase 4: Meal Planning Calendar 📅 PLANNED
+## Phase 4: Meal Planning Calendar ✅ COMPLETE
 
-### Section 1: Data Layer
+- [x] Meal plan service and API routes
+- [x] Weekly calendar grid UI
+- [x] Recipe picker modal
+- [x] Generate shopping list from meal plan
 
-#### Service Creation
-- [ ] Create `meal-plan-service.ts`
-- [ ] Implement CRUD for meal plans
-- [ ] Get week's meals by date range
-- [ ] Assign recipe to date/meal-type
-- [ ] Update servings per meal
-- [ ] Test service functions
+---
 
-#### Shopping List Integration
-- [ ] Collect all recipes for week
-- [ ] Extract all ingredients
-- [ ] Apply consolidation algorithm
-- [ ] Adjust for servings
-- [ ] Generate shopping list
-- [ ] Test batch generation
+## Security Hardening ✅ COMPLETE
 
-### Section 2: Calendar UI
+- [x] Zod validation on all API routes
+- [x] File upload magic byte validation
+- [x] Rate limiting (3+ tiers)
+- [x] CSP, security headers, body size limits
+- [x] Fetch timeouts on all external calls
 
-#### Calendar Page
-- [ ] Create `/meal-plan` page
-- [ ] Build weekly grid component
-- [ ] Show days of week
-- [ ] Show meal slots (breakfast/lunch/dinner)
-- [ ] Handle empty states
-- [ ] Add week navigation (prev/next)
-- [ ] Test calendar display
+---
 
-#### Recipe Picker Modal
-- [ ] Create recipe picker component
-- [ ] Search/filter recipes
-- [ ] Show recipe preview
-- [ ] Adjust servings before adding
-- [ ] Confirm selection
-- [ ] Test picker flow
+## Favorites ✅ COMPLETE
 
-#### Meal Slot Component
-- [ ] Create meal slot component
-- [ ] Show assigned recipe with image
-- [ ] Click to change/remove
-- [ ] Show servings
-- [ ] Edit servings inline
-- [ ] Test slot interactions
+- [x] Migration 006, data layer, API, FavoriteButton, Favoritos tab
 
-#### Shopping List Generation
-- [ ] Add "Generate Shopping List" button
-- [ ] Show preview of items
-- [ ] Option to name the list
-- [ ] Confirm and create
-- [ ] Test generation from week
+---
 
-### Mobile Optimization
-- [ ] Vertical scroll for mobile
-- [ ] Grid view for desktop
-- [ ] Touch-friendly interactions
-- [ ] Test responsiveness
+## Dark Mode ✅ COMPLETE
 
-### Testing & Polish
-- [ ] Test calendar navigation
-- [ ] Verify recipe assignment
-- [ ] Check serving adjustments
-- [ ] Test shopping list generation
-- [ ] Mobile testing
+- [x] ThemeProvider, tailwind darkMode: 'class', dark: variants on all components
 
-### Deployment
-- [ ] Deploy Phase 4 changes
-- [ ] Test live deployment
-- [ ] Full end-to-end testing
+---
+
+## Sprint 1: Video Recipe Extraction + Gemini Migration ✅ COMPLETE (2026-02-16)
+
+### 1A. Migrate Gemini to 2.5-flash
+- [x] Change model from gemini-2.0-flash to gemini-2.5-flash in generate-recipe route
+- [x] Update nutrition fields in Gemini prompt
+
+### 1B. Video extraction API route
+- [x] Create `/api/extract-recipe-from-video/route.ts` (maxDuration=60)
+- [x] Add EXTRACT_VIDEO rate limit (2/min)
+- [x] Add VideoExtractionSchema to validation
+- [x] 3 URL resolution paths: YouTube direct, TikTok/Instagram og:video, file upload fallback
+
+### 1C. Video extraction page
+- [x] Create `/recipes/from-video/page.tsx`
+- [x] URL input with paste detection, platform auto-detection
+- [x] File upload fallback for unsupported platforms
+- [x] Add "Video" button to recipes page
+
+---
+
+## Sprint 2: Recipe Enhancements ✅ COMPLETE (2026-02-16)
+
+### 2A. Recipe Categories
+- [x] Migration 007 (categories table + category_id FK)
+- [x] CategoryService, /api/categories route
+- [x] Category dropdown in RecipeForm
+- [x] Category filter chips on recipes page
+- [x] Updated types.ts and manual-adapter
+
+### 2B. Recipe Import from URL
+- [x] Create `/api/import-recipe/route.ts`
+- [x] Create `/recipes/import/page.tsx`
+- [x] Add "Importar" button to recipes page
+
+### 2C. Print-Friendly Recipe View
+- [x] Create RecipePrintView component
+- [x] Create `/recipes/[id]/print/page.tsx`
+- [x] Add `@media print` styles to globals.css
+- [x] Add "Imprimir" button to RecipeDetail
+
+---
+
+## Sprint 3: Shopping List Enhancements ✅ COMPLETE (2026-02-16)
+
+### 3A. Ingredient Consolidation
+- [x] Create `ingredient-consolidation.ts` (normalize, group, sum, fractions, unit aliases)
+- [x] Integrate into generate-shopping-list route
+
+### 3B. Drag-Drop Reorder
+- [x] Migration 008 (sort_order, price, share_token)
+- [x] Create reorder API route (PATCH batch)
+- [x] HTML5 drag-and-drop on shopping list page
+- [x] ShoppingListService reorderItems method
+
+### 3C. Share Shopping List
+- [x] Create share API route (generates crypto.randomUUID token)
+- [x] Create public `/shared/shopping-list/[token]` page
+- [x] "Compartir" button with clipboard copy
+
+### 3D. Price Tracking
+- [x] Price input per item (MXN), total display
+- [x] ShoppingListService updateItemPrice method
+
+---
+
+## Sprint 4: Meal Planning Enhancements ✅ COMPLETE (2026-02-16)
+
+### 4A. Monthly Calendar View
+- [x] Create MonthlyCalendar component (Monday-based, today highlight)
+- [x] Weekly/monthly toggle on meal-plan page
+
+### 4B. Meal Templates
+- [x] Migration 009 (meal_templates + meal_template_items)
+- [x] MealTemplateService (CRUD + saveFromWeek + applyToWeek)
+- [x] Template API routes (GET/POST/DELETE/Apply)
+- [x] TemplateManager UI component
+
+### 4C. Nutritional Tracking
+- [x] Migration 010 (nutrition columns on recipes)
+- [x] Updated types.ts, validation, RecipeForm, RecipeDetail
+- [x] Updated Gemini prompts to include nutrition estimates
+- [x] Daily nutrition totals on meal-plan page
+
+---
+
+## Sprint 5: Technical Improvements ✅ COMPLETE (2026-02-16)
+
+### 5A. Image Optimization
+- [x] Create `image-compress.ts` (Canvas API, 1200px max, 0.8 quality)
+- [x] Integrate into RecipeForm (compress before upload)
+
+### 5B. Automated Testing
+- [x] Install vitest 2.x, @testing-library/react, jsdom 24, @vitejs/plugin-react
+- [x] Create vitest.config.mjs
+- [x] Create `validation.test.ts` (15 tests)
+- [x] Create `ingredient-consolidation.test.ts` (7 tests)
+- [x] Create `RecipeCard.test.tsx` (5 tests)
+- [x] All 27 tests pass
+
+### 5C. PWA Support
+- [x] Install @serwist/next + serwist
+- [x] Create manifest.json (Spanish metadata, green theme)
+- [x] Create SVG app icons (192x192, 512x512)
+- [x] Create sw.ts service worker
+- [x] Wrap next.config.ts with serwist
+- [x] Add manifest link + meta tags to layout.tsx
+
+### 5D. Performance Monitoring
+- [x] Install @vercel/speed-insights
+- [x] Add `<SpeedInsights />` to root layout
+
+---
+
+## ⚠️ DEPLOYMENT CHECKLIST (before features go live)
+
+### Database Migrations to Run
+- [ ] Verify migrations 004-006 are already run
+- [ ] Run migration 007 (recipe categories)
+- [ ] Run migration 008 (shopping list: sort_order, price, share_token)
+- [ ] Run migration 009 (meal templates)
+- [ ] Run migration 010 (recipe nutrition columns)
+
+### Vercel Actions
+- [ ] Enable Fluid Compute (free toggle, for 60s video extraction timeout)
+- [ ] Commit and push all changes
+- [ ] Verify deployment succeeds
+
+### Code Not Yet Committed
+- [ ] All Sprint 1-5 code changes (large diff, many new files)
+- [ ] Updated dev docs
 
 ---
 
 ## Future Enhancements 🚀 BACKLOG
 
-### Recipe Features
-- [ ] Recipe ratings and favorites
-- [ ] Recipe categories/collections
-- [ ] Recipe tags autocomplete
-- [ ] Duplicate recipe function
-- [ ] Recipe import from URL
 - [ ] Recipe export to PDF
-- [ ] Print-friendly recipe view
-
-### Shopping List Enhancements
-- [ ] Reorder items by drag-drop
-- [ ] Price tracking
-- [ ] Store locations
-- [ ] Share shopping list
-- [ ] Voice input for items
-
-### Meal Planning Enhancements
-- [ ] Monthly calendar view
-- [ ] Meal templates (e.g., "Italian Week")
-- [ ] Nutritional tracking
-- [ ] Calorie counting
-- [ ] Dietary restrictions filter
-
-### Social Features (if multi-user added)
-- [ ] Share recipes publicly
-- [ ] Recipe comments and reviews
-- [ ] Follow other users
-- [ ] Recipe collections
-- [ ] Social feed
-
-### Advanced Features
-- [ ] Recipe notes and modifications
-- [ ] Cooking timer integration
-- [ ] Voice-controlled cooking mode
-- [ ] Smart display integration
-- [ ] Barcode scanner for ingredients
-- [ ] Nutritional information API
-- [ ] Recipe recommendations (ML)
-- [ ] Seasonal ingredient suggestions
-
-### Technical Improvements
-- [ ] Add automated testing
-- [ ] Performance monitoring
-- [ ] Error tracking (Sentry)
-- [ ] Analytics (optional)
-- [ ] PWA support (offline mode)
-- [ ] Dark mode
-- [ ] i18n (internationalization)
+- [ ] Offline recipe access (PWA cache recipes)
+- [ ] Multi-language support
+- [ ] Recipe scaling (adjust servings → recalculate ingredients)
+- [ ] Cooking timers in recipe view
+- [ ] Recipe rating system
+- [ ] Social sharing (share recipes via link)
+- [ ] Meal plan AI suggestions based on preferences
+- [ ] Shopping list price history/trends
+- [ ] More test coverage (services, API routes)
 
 ---
 
-## Maintenance Tasks 🔧 ONGOING
-
-### Regular Checks
-- [ ] Monitor Vercel deployments
-- [ ] Check Supabase usage
-- [ ] Review API costs (Phase 2+)
-- [ ] Update dependencies monthly
-- [ ] Backup database weekly
-- [ ] Review error logs
-
-### Documentation
-- [ ] Keep README updated
-- [ ] Document new features
-- [ ] Update API documentation
-- [ ] Maintain changelog
-
-### Security
-- [ ] Rotate API keys quarterly
-- [ ] Review RLS policies
-- [ ] Check for dependency vulnerabilities
-- [ ] Update Node.js version
-
----
-
-## Notes
-
-### Priority Levels
-- 🎯 **NEXT**: Current focus
-- ✅ **COMPLETE**: Finished
-- 📋 **PLANNED**: Designed, ready to implement
-- 🚀 **BACKLOG**: Future ideas
-
-### Effort Estimates
-- **S** (Small): < 2 hours
-- **M** (Medium): 2-4 hours
-- **L** (Large): 4-8 hours
-- **XL** (Extra Large): > 8 hours
-
-### Dependencies
-Tasks marked with arrows (→) depend on completion of previous tasks in the same section.
-
----
-
-**Track your progress by checking off tasks as you complete them!**
-
-**Current Phase**: Phase 1 Complete ✅
-**Next Phase**: Phase 2 - Multi-Source Recipes 🎯
+**Current State**: All phases + 5 enhancement sprints complete ✅
+**Next Priority**: Commit/push code, run migrations, deploy
